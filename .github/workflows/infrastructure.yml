@@ -58,8 +58,8 @@ jobs:
             -input=false
             --var project_name=drone
             --var location=northeurope
-            --var-file .\${{env.selected-environment}}-northeurope.json
-            -out=tfplan
+            --var-file ./${{env.selected-environment}}-northeurope.json
+            -out tfplan
         working-directory: ./terraform
 
       - name: Terraform Apply
@@ -67,6 +67,5 @@ jobs:
           terraform apply
             -input=false
             -auto-approve
-            --var project_name=drone
             tfplan
         working-directory: ./terraform
