@@ -38,7 +38,7 @@ jobs:
         working-directory: ./terraform
 
       - name: Terraform Init
-        run: |
+        run: >
           terraform init
           -input=false
           -backend-config subscription_id=${{secrets.AZURE_SUBSCRIPTION_ID}}
@@ -53,7 +53,7 @@ jobs:
         working-directory: ./terraform
 
       - name: Terraform Plan
-        run: |
+        run: >
           terraform plan
             -input=false
             --var project_name=drone
@@ -63,7 +63,7 @@ jobs:
         working-directory: ./terraform
 
       - name: Terraform Apply
-        run: |
+        run: >
           terraform apply
             -input=false
             -auto-approve
