@@ -35,6 +35,7 @@ jobs:
 
       - name: Terraform Format
         run: terraform fmt -check
+        working-directory: ./terraform
 
       - name: Terraform Init
         run: |
@@ -44,10 +45,12 @@ jobs:
           -backend-config resource_group_name=terraform
           -backend-config storage_account_name=ncterraform
           -backend-config container_name=state
-          -backend-config key=drone-${{env.DOCKER_IMAGE_NAME}}-northeurope.tfstate
+          -backend-config key=drone-${{env.selected-environment}}-northeurope.tfstate
+        working-directory: ./terraform
 
       - name: Terraform Validate
         run: terraform validate
+        working-directory: ./terraform
 
       - name: Terraform Plan
         run: |
@@ -55,8 +58,9 @@ jobs:
             -input=false
             --var project_name=drone
             --var location=northeurope
-            --var-file .\${{env.DOCKER_IMAGE_NAME}}-northeurope.json
+            --var-file .\${{env.selected-environment}}-northeurope.json
             -out=tfplan
+        working-directory: ./terraform
 
       - name: Terraform Apply
         run: |
@@ -65,4 +69,4 @@ jobs:
             -auto-approve
             --var project_name=drone
             tfplan
-            
+        working-directory: ./terraform
