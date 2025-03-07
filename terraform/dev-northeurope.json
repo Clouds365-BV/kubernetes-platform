@@ -94,7 +94,7 @@
     "identity": {
       "web-app": {
         "container_registry": {
-          "name": "nextens",
+          "name": "test",
           "data_resource": true,
           "role": "AcrPull"
         }
@@ -107,7 +107,7 @@
       }
     },
     "key_vault": {
-      "nextens": {
+      "test": {
         "data_resource": true,
         "secrets": {
           "tex-postgresql-admin-username": {
@@ -137,12 +137,6 @@
           },
           "tex-s2s-token-secret": {
             "read_only": true
-          },
-          "starnextensnl": {
-            "read_only": true
-          },
-          "NextensKVAcc2025": {
-            "read_only": true
           }
         }
       }
@@ -163,8 +157,8 @@
           "diagnostic_enabled": true,
           "log_analytics_workspace_id": "main",
           "public_network_access_enabled": false,
-          "administrator_login": "nextens|tex-postgresql-admin-username",
-          "administrator_password": "nextens|tex-postgresql-admin-password",
+          "administrator_login": "test|tex-postgresql-admin-username",
+          "administrator_password": "test|tex-postgresql-admin-password",
           "private_endpoint_enabled": true,
           "private_endpoint_subnet_id": "main|private-endpoint",
           "private_dns_zones": [
@@ -185,8 +179,8 @@
         "log_analytics_workspace_id": "main",
         "app_service_environment": "ase",
         "certificates": {
-          "NextensKVAcc2025": "nextens|NextensKVAcc2025",
-          "starnextensnl": "nextens|starnextensnl"
+          "KV2025": "test|KV2025",
+          "test": "test|test"
         },
         "autoscale": {
           "cpu": {
@@ -342,25 +336,25 @@
         "diagnostic_enabled": true,
         "log_analytics_workspace_id": "main",
         "application_insights": "main",
-        "container_registry": "nextens",
+        "container_registry": "test",
         "search_service": "fiscaaltotaal",
         "identities": {
           "web-app": {}
         },
         "site_config": {
           "application_stack": {
-            "docker_image_name": "nextens-tex-ai-api:latest"
+            "docker_image_name": "test-ai-api:latest"
           }
         },
         "application_settings": {
           "AZURE_AI_SEARCH_INDEX": "idx-content-20241106",
           "ES_INDEX_NAME": "naslag-almanakken-2,naslag-wetten-2,naslag-fiscale-cijfers-2,naslag-onderwerpen-2",
           "ES_URL": "https://naslag-search-prd-secondary.es.westeurope.azure.elastic-cloud.com",
-          "ES_API_KEY": "nextens|tex-es-api-key",
+          "ES_API_KEY": "test|tex-es-api-key",
           "VECTOR_FIELD": "embeddings",
-          "LANGFUSE_PUBLIC_KEY": "nextens|tex-langfuse-public-key",
-          "LANGFUSE_SECRET_KEY": "nextens|tex-langfuse-secret-key",
-          "S2S_TOKEN_SECRET": "nextens|tex-s2s-token-secret",
+          "LANGFUSE_PUBLIC_KEY": "test|tex-langfuse-public-key",
+          "LANGFUSE_SECRET_KEY": "test|tex-langfuse-secret-key",
+          "S2S_TOKEN_SECRET": "test|tex-s2s-token-secret",
           "OPENAI_API_VERSION": "2024-10-01",
           "OPEN_AI_EMBEDDING_DIMENSIONS": 1536,
           "OPEN_AI_FRANCE_API_VERSION": "gpt-35-turbo-16k",
@@ -380,7 +374,7 @@
         "diagnostic_enabled": true,
         "log_analytics_workspace_id": "main",
         "application_insights": "main",
-        "container_registry": "nextens",
+        "container_registry": "test",
         "database": "main",
         "identities": {
           "web-app": {}
@@ -393,18 +387,18 @@
         "application_settings": {
           "DATABASE_NAME": "langfuse",
           "WEBSITES_PORT": "3000",
-          "LANGFUSE_INIT_ORG_ID": "nextens",
-          "LANGFUSE_INIT_ORG_NAME": "Nextens",
-          "LANGFUSE_INIT_PROJECT_ID": "nextens-tex",
-          "LANGFUSE_INIT_PROJECT_NAME": "Nextens Tex",
-          "LANGFUSE_INIT_PROJECT_PUBLIC_KEY": "nextens|tex-langfuse-public-key",
-          "LANGFUSE_INIT_PROJECT_SECRET_KEY": "nextens|tex-langfuse-secret-key",
-          "LANGFUSE_INIT_USER_EMAIL": "nextens-tex@nextens.nl",
-          "LANGFUSE_INIT_USER_NAME": "Nextens TEX",
-          "LANGFUSE_INIT_USER_PASSWORD": "nextens|tex-langfuse-init-user-password",
-          "ENCRYPTION_KEY": "nextens|tex-langfuse-encryption-key",
-          "NEXTAUTH_SECRET": "nextens|tex-langfuse-nextauth-secret",
-          "SALT": "nextens|tex-langfuse-salt"
+          "LANGFUSE_INIT_ORG_ID": "test",
+          "LANGFUSE_INIT_ORG_NAME": "test",
+          "LANGFUSE_INIT_PROJECT_ID": "test-tex",
+          "LANGFUSE_INIT_PROJECT_NAME": "test Tex",
+          "LANGFUSE_INIT_PROJECT_PUBLIC_KEY": "test|tex-langfuse-public-key",
+          "LANGFUSE_INIT_PROJECT_SECRET_KEY": "test|tex-langfuse-secret-key",
+          "LANGFUSE_INIT_USER_EMAIL": "test-tex@test.nl",
+          "LANGFUSE_INIT_USER_NAME": "test TEX",
+          "LANGFUSE_INIT_USER_PASSWORD": "test|tex-langfuse-init-user-password",
+          "ENCRYPTION_KEY": "test|tex-langfuse-encryption-key",
+          "NEXTAUTH_SECRET": "test|tex-langfuse-nextauth-secret",
+          "SALT": "test|tex-langfuse-salt"
         }
       }
     },

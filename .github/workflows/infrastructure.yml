@@ -41,11 +41,11 @@ jobs:
         run: >
           terraform init
           -input=false
-          -backend-config subscription_id=${{secrets.AZURE_SUBSCRIPTION_ID}}
-          -backend-config resource_group_name=terraform
-          -backend-config storage_account_name=ncterraform
-          -backend-config container_name=state
-          -backend-config key=drone-${{env.selected-environment}}-northeurope.tfstate
+          -backend-config="subscription_id=${{secrets.AZURE_SUBSCRIPTION_ID}}"
+          -backend-config="resource_group_name=terraform"
+          -backend-config="storage_account_name=ncterraform"
+          -backend-config="container_name=state"
+          -backend-config="key=drone-${{env.selected-environment}}-northeurope.tfstate"
         working-directory: ./terraform
 
       - name: Terraform Validate
@@ -56,9 +56,9 @@ jobs:
         run: >
           terraform plan
             -input=false
-            --var project_name=drone
-            --var location=northeurope
-            --var-file=./${{env.selected-environment}}-northeurope.json
+            --var="project_name=drone"
+            --var="location=northeurope"
+            --var-file="./${{env.selected-environment}}-northeurope.json"
             -out=tfplan
         working-directory: ./terraform
 
@@ -66,6 +66,5 @@ jobs:
         run: >
           terraform apply
             -input=false
-            -auto-approve
             tfplan
         working-directory: ./terraform
