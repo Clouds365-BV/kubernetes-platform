@@ -55,16 +55,16 @@ jobs:
       - name: Terraform Plan
         run: >
           terraform plan
-            -input=false
-            --var="project_name=drone"
-            --var="location=northeurope"
-            --var-file="./${{env.selected-environment}}-northeurope.json"
-            -out=tfplan
+          -input=false
+          --var="project_name=drone"
+          --var="location=northeurope"
+          --var-file="./${{env.selected-environment}}-northeurope.json"
+          -out=tfplan
         working-directory: ./terraform
 
       - name: Terraform Apply
         run: >
           terraform apply
-            -input=false
-            tfplan
+          -input=false
+          tfplan
         working-directory: ./terraform
