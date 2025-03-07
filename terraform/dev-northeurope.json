@@ -8,6 +8,19 @@
       "Owner": "Drone Shuttles",
       "Project": "Ghost"
     },
+    "log_analytics_workspace": {
+      "main": {
+        "sku_name": "PerGB2018",
+        "retention_in_days": 30
+      }
+    },
+    "application_insights": {
+      "main": {
+        "log_analytics_workspace": "main",
+        "application_type": "web",
+        "retention_in_days": 31
+      }
+    },
     "vnet": {
       "main": {
         "address_space": [
@@ -23,7 +36,7 @@
           },
           "postgresql-flexible-server": {
             "address_prefixes": [
-              "10.115.20.0/24"
+              "10.10.20.0/24"
             ],
             "delegations": {
               "main": {
@@ -34,42 +47,6 @@
               }
             }
           }
-        }
-      },
-      "swedencentral": {
-        "location": "swedencentral",
-        "address_space": [
-          "10.116.0.0/16"
-        ],
-        "diagnostic_enabled": true,
-        "log_analytics_workspace_id": "main",
-        "subnets": {
-          "private-endpoint": {
-            "address_prefixes": [
-              "10.116.10.0/24"
-            ]
-          }
-        },
-        "peerings": {
-          "main": {}
-        }
-      },
-      "francecentral": {
-        "location": "francecentral",
-        "address_space": [
-          "10.117.0.0/16"
-        ],
-        "diagnostic_enabled": true,
-        "log_analytics_workspace_id": "main",
-        "subnets": {
-          "private-endpoint": {
-            "address_prefixes": [
-              "10.117.10.0/24"
-            ]
-          }
-        },
-        "peerings": {
-          "main": {}
         }
       }
     },
@@ -100,52 +77,39 @@
         }
       }
     },
-    "log_analytics_workspace": {
-      "main": {
-        "sku_name": "PerGB2018",
-        "retention_in_days": 30
-      }
-    },
     "key_vault": {
       "test": {
         "data_resource": true,
         "secrets": {
-          "tex-postgresql-admin-username": {
+          "postgresql-admin-username": {
             "value": "psqladmin"
           },
-          "tex-postgresql-admin-password": {},
-          "tex-langfuse-salt": {
+          "postgresql-admin-password": {},
+          "langfuse-salt": {
             "base64": true
           },
-          "tex-langfuse-encryption-key": {
+          "langfuse-encryption-key": {
             "hex": true
           },
-          "tex-langfuse-nextauth-secret": {
+          "langfuse-nextauth-secret": {
             "base64": true
           },
-          "tex-langfuse-public-key": {
+          "langfuse-public-key": {
             "prefix": "pk-lf-",
             "uuid": true
           },
-          "tex-langfuse-secret-key": {
+          "langfuse-secret-key": {
             "prefix": "sk-lf-",
             "uuid": true
           },
-          "tex-langfuse-init-user-password": {},
-          "tex-es-api-key": {
+          "langfuse-init-user-password": {},
+          "es-api-key": {
             "read_only": true
           },
-          "tex-s2s-token-secret": {
+          "s2s-token-secret": {
             "read_only": true
           }
         }
-      }
-    },
-    "application_insights": {
-      "main": {
-        "log_analytics_workspace": "main",
-        "application_type": "web",
-        "retention_in_days": 31
       }
     },
     "databases": {
@@ -157,8 +121,8 @@
           "diagnostic_enabled": true,
           "log_analytics_workspace_id": "main",
           "public_network_access_enabled": false,
-          "administrator_login": "test|tex-postgresql-admin-username",
-          "administrator_password": "test|tex-postgresql-admin-password",
+          "administrator_login": "test|postgresql-admin-username",
+          "administrator_password": "test|postgresql-admin-password",
           "private_endpoint_enabled": true,
           "private_endpoint_subnet_id": "main|private-endpoint",
           "private_dns_zones": [
@@ -350,11 +314,11 @@
           "AZURE_AI_SEARCH_INDEX": "idx-content-20241106",
           "ES_INDEX_NAME": "naslag-almanakken-2,naslag-wetten-2,naslag-fiscale-cijfers-2,naslag-onderwerpen-2",
           "ES_URL": "https://naslag-search-prd-secondary.es.westeurope.azure.elastic-cloud.com",
-          "ES_API_KEY": "test|tex-es-api-key",
+          "ES_API_KEY": "test|es-api-key",
           "VECTOR_FIELD": "embeddings",
-          "LANGFUSE_PUBLIC_KEY": "test|tex-langfuse-public-key",
-          "LANGFUSE_SECRET_KEY": "test|tex-langfuse-secret-key",
-          "S2S_TOKEN_SECRET": "test|tex-s2s-token-secret",
+          "LANGFUSE_PUBLIC_KEY": "test|langfuse-public-key",
+          "LANGFUSE_SECRET_KEY": "test|langfuse-secret-key",
+          "S2S_TOKEN_SECRET": "test|s2s-token-secret",
           "OPENAI_API_VERSION": "2024-10-01",
           "OPEN_AI_EMBEDDING_DIMENSIONS": 1536,
           "OPEN_AI_FRANCE_API_VERSION": "gpt-35-turbo-16k",
@@ -391,14 +355,14 @@
           "LANGFUSE_INIT_ORG_NAME": "test",
           "LANGFUSE_INIT_PROJECT_ID": "test-tex",
           "LANGFUSE_INIT_PROJECT_NAME": "test Tex",
-          "LANGFUSE_INIT_PROJECT_PUBLIC_KEY": "test|tex-langfuse-public-key",
-          "LANGFUSE_INIT_PROJECT_SECRET_KEY": "test|tex-langfuse-secret-key",
+          "LANGFUSE_INIT_PROJECT_PUBLIC_KEY": "test|langfuse-public-key",
+          "LANGFUSE_INIT_PROJECT_SECRET_KEY": "test|langfuse-secret-key",
           "LANGFUSE_INIT_USER_EMAIL": "test-tex@test.nl",
           "LANGFUSE_INIT_USER_NAME": "test TEX",
-          "LANGFUSE_INIT_USER_PASSWORD": "test|tex-langfuse-init-user-password",
-          "ENCRYPTION_KEY": "test|tex-langfuse-encryption-key",
-          "NEXTAUTH_SECRET": "test|tex-langfuse-nextauth-secret",
-          "SALT": "test|tex-langfuse-salt"
+          "LANGFUSE_INIT_USER_PASSWORD": "test|langfuse-init-user-password",
+          "ENCRYPTION_KEY": "test|langfuse-encryption-key",
+          "NEXTAUTH_SECRET": "test|langfuse-nextauth-secret",
+          "SALT": "test|langfuse-salt"
         }
       }
     },

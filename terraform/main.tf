@@ -5,6 +5,31 @@ resource "azurerm_resource_group" "this" {
   tags = local.tags
 }
 
+resource "azurerm_log_analytics_workspace" "this" {
+  for_each = try(var.env.log_analytics_workspace, {})
+
+  name                = try(each.value.name, "${local.resource_name_prefix}-${each.key}-log")
+  location            = azurerm_resource_group.this.location
+  resource_group_name = azurerm_resource_group.this.name
+  sku                 = each.value.sku_name
+  retention_in_days   = each.value.retention_in_days
+
+  tags = local.tags
+}
+
+module "application_insights" {
+  source   = "../modules/azure/application-insights"
+  for_each = try(var.env.application_insights, {})
+
+  name                       = try(each.value.name, "${local.resource_name_prefix}-${each.key}-appi")
+  location                   = try(each.value.location, azurerm_resource_group.this.location)
+  resource_group_name        = azurerm_resource_group.this.name
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.this[each.value.log_analytics_workspace].id
+  application_type           = each.value.application_type
+
+  tags = local.tags
+}
+
 # resource "azurerm_user_assigned_identity" "this" {
 #   for_each = try(var.env.identity, {})
 #
@@ -25,31 +50,6 @@ resource "azurerm_resource_group" "this" {
 #   object_id            = azurerm_user_assigned_identity.this[each.key].principal_id
 #   role_definition_name = each.value.container_registry.role
 #   resource_id          = data.azurerm_container_registry.this[each.value.container_registry.name].id
-# }
-#
-# resource "azurerm_log_analytics_workspace" "this" {
-#   for_each = try(var.env.log_analytics_workspace, {})
-#
-#   name                = try(each.value.name, "${local.resource_name_prefix}-${each.key}-log")
-#   location            = azurerm_resource_group.this.location
-#   resource_group_name = azurerm_resource_group.this.name
-#   sku                 = each.value.sku_name
-#   retention_in_days   = each.value.retention_in_days
-#
-#   tags = local.tags
-# }
-#
-# module "application_insights" {
-#   source   = "../../modules/azure/application-insights"
-#   for_each = try(var.env.application_insights, {})
-#
-#   name                       = try(each.value.name, "${local.resource_name_prefix}-${each.key}-appi")
-#   location                   = try(each.value.location, azurerm_resource_group.this.location)
-#   resource_group_name        = azurerm_resource_group.this.name
-#   log_analytics_workspace_id = azurerm_log_analytics_workspace.this[each.value.log_analytics_workspace].id
-#   application_type           = each.value.application_type
-#
-#   tags = local.tags
 # }
 #
 # resource "azurerm_storage_account" "this" {
@@ -90,24 +90,3 @@ resource "azurerm_resource_group" "this" {
 #   ]
 # }
 #
-# module "cognitive_service" {
-#   source   = "../../modules/azure/cognitive-service"
-#   for_each = try(var.env.cognitive_service, {})
-#
-#   name                = try(each.value.name, "${local.resource_name_prefix}-${each.key}-oai")
-#   location            = try(each.value.location, azurerm_resource_group.this.location)
-#   resource_group_name = azurerm_resource_group.this.name
-#   kind                = each.value.kind
-#   sku_name            = each.value.sku_name
-#   config = merge(
-#     each.value,
-#     {
-#       private_endpoint_subnet_id = try(strcontains(each.value.private_endpoint_subnet_id, "|") ?
-#       data.azurerm_subnet.this[each.value.private_endpoint_subnet_id].id : each.value.private_endpoint_subnet_id, null)
-#       private_dns_zone_ids       = [for pdz in try(each.value.private_dns_zones, []) : module.private_dns_zone[pdz].id]
-#       log_analytics_workspace_id = try(azurerm_log_analytics_workspace.this[each.value.log_analytics_workspace_id].id, null)
-#     }
-#   )
-#
-#   tags = local.tags
-# }
