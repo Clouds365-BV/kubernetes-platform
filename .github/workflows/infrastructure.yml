@@ -40,7 +40,7 @@ jobs:
       - name: Terraform Init
         run: >
           terraform init
-          -input false
+          -input=false
           -backend-config subscription_id=${{secrets.AZURE_SUBSCRIPTION_ID}}
           -backend-config resource_group_name=terraform
           -backend-config storage_account_name=ncterraform
@@ -55,17 +55,17 @@ jobs:
       - name: Terraform Plan
         run: >
           terraform plan
-            -input false
+            -input=false
             --var project_name=drone
             --var location=northeurope
-            --var-file ./${{env.selected-environment}}-northeurope.json
+            --var-file=./${{env.selected-environment}}-northeurope.json
             -out tfplan
         working-directory: ./terraform
 
       - name: Terraform Apply
         run: >
           terraform apply
-            -input false
+            -input=false
             -auto-approve
             tfplan
         working-directory: ./terraform
