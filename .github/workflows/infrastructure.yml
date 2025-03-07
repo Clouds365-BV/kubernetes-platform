@@ -59,7 +59,7 @@ jobs:
             --var project_name=drone
             --var location=northeurope
             --var-file=./${{env.selected-environment}}-northeurope.json
-            -out tfplan
+            -out=tfplan
         working-directory: ./terraform
 
       - name: Terraform Apply
