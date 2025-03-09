@@ -70,21 +70,20 @@
     },
     "databases": {
       "postgresql": {
-
-          "key_vault": "main",
-          "sku_name": "B_Standard_B1ms",
+        "key_vault": "main",
+        "sku_name": "B_Standard_B1ms",
         "subnet": "postgresql-flexible-server",
-          "public_network_access_enabled": false,
+        "public_network_access_enabled": false,
         "administrator_login": "postgresql-admin-username",
         "administrator_password": "postgresql-admin-password",
-          "private_endpoint_enabled": true,
+        "private_endpoint_enabled": true,
         "private_endpoint_subnet_id": "private-endpoint",
-          "private_dns_zones": [
-            "privatelink.postgres.database.azure.com"
-          ],
-          "databases": {
-            "drone": {}
-          }
+        "private_dns_zones": [
+          "privatelink.postgres.database.azure.com"
+        ],
+        "databases": {
+          "drone": {}
+        }
       }
     }
   }

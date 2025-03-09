@@ -4,7 +4,7 @@ resource "azurerm_postgresql_flexible_server" "this" {
   resource_group_name           = azurerm_resource_group.this.name
   administrator_login           = var.env.databases.postgresql.administrator_login
   administrator_password        = var.env.databases.postgresql.administrator_password
-  delegated_subnet_id           = var.env.databases.postgresql.delegated_subnet_id
+  delegated_subnet_id           = azurerm_subnet.this[var.env.databases.postgresql.subnet].id
   backup_retention_days         = 7
   public_network_access_enabled = var.env.databases.postgresql.public_network_access_enabled
   sku_name                      = var.env.databases.postgresql.sku_name
