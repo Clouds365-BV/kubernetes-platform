@@ -4,7 +4,7 @@ resource "azurerm_user_assigned_identity" "k8s" {
   location            = azurerm_resource_group.this.location
 }
 
-resource "azurerm_role_assignment" "example" {
+resource "azurerm_role_assignment" "k8s" {
   scope                = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
   role_definition_name = "Private DNS Zone Contributor"
   principal_id         = azurerm_user_assigned_identity.k8s.principal_id
@@ -28,6 +28,7 @@ resource "azurerm_kubernetes_cluster" "this" {
     vnet_subnet_id       = azurerm_subnet.this["k8s"].id
     min_count            = 1
     max_count            = 10
+    auto_scaling_enabled = true
     orchestrator_version = "1.28"
     tags                 = local.tags
   }

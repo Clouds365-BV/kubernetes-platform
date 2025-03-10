@@ -38,7 +38,10 @@
                 "Microsoft.Network/virtualNetworks/subnets/join/action"
               ]
             }
-          }
+          },
+          "service_endpoints": [
+            "Microsoft.Storage"
+          ]
         },
         "k8s": {
           "address_prefixes": [
