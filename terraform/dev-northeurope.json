@@ -39,11 +39,21 @@
               ]
             }
           }
+        },
+        "k8s": {
+          "address_prefixes": [
+            "10.10.30.0/24"
+          ]
         }
       }
     },
     "private_dns_zone": {
       "privatelink.postgres.database.azure.com": {
+        "virtual_networks": {
+          "main": {}
+        }
+      },
+      "privatelink.northeurope.azmk8s.io": {
         "virtual_networks": {
           "main": {}
         }
