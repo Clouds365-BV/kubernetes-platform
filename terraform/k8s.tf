@@ -21,6 +21,7 @@ resource "azurerm_kubernetes_cluster" "this" {
   local_account_disabled            = true
   role_based_access_control_enabled = true
   kubernetes_version                = "1.28"
+  oidc_issuer_enabled               = true
 
   default_node_pool {
     name                 = "system"
