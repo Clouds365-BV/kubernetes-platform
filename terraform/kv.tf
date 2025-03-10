@@ -19,26 +19,15 @@ resource "azurerm_key_vault" "this" {
     virtual_network_subnet_ids = []
   }
 
-  access_policy {
-    tenant_id = data.azurerm_client_config.current.tenant_id
-    object_id = data.azurerm_client_config.current.object_id
-
-    key_permissions = [
-      "Create", "Decrypt", "Delete", "Encrypt", "Get", "Import", "List", "Purge", "Recover", "Restore", "Sign",
-      "UnwrapKey", "Update", "Verify", "WrapKey", "Release", "Rotate", "GetRotationPolicy", "SetRotationPolicy"
-    ]
-
-    secret_permissions = [
-      "Backup", "Delete", "Get", "List", "Purge", "Recover", "Restore", "Set"
-    ]
-
-    certificate_permissions = [
-      "Backup", "Create", "Delete", "DeleteIssuers", "Get", "GetIssuers", "Import", "List", "ListIssuers",
-      "ManageContacts", "ManageIssuers", "Purge", "Recover", "Restore", "SetIssuers", "Update"
-    ]
-  }
-
   tags = local.tags
+}
+
+module "role_assignments" {
+  source = "../modules/azure//authorization/role-assignment"
+
+  object_id            = data.azurerm_client_config.current.object_id
+  role_definition_name = "Key Vault Administrator"
+  resource_id          = azurerm_key_vault.this.id
 }
 
 resource "random_password" "this" {
