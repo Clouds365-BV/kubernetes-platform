@@ -33,7 +33,7 @@
           ],
           "delegations": {
             "main": {
-              "name": "Microsoft.DBforMySQL/flexibleServers",
+              "name": "Microsoft.DBforPostgreSQL/flexibleServers",
               "actions": [
                 "Microsoft.Network/virtualNetworks/subnets/join/action"
               ]
