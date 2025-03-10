@@ -21,6 +21,11 @@ resource "azurerm_postgresql_flexible_server" "this" {
     #prevent_destroy = true
   }
 
+  depends_on = [
+    azurerm_subnet.this,
+    azurerm_private_dns_zone.this
+  ]
+
   tags = local.tags
 }
 
