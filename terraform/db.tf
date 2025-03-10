@@ -8,9 +8,11 @@ resource "azurerm_postgresql_flexible_server" "this" {
   backup_retention_days         = 7
   public_network_access_enabled = var.env.databases.postgresql.public_network_access_enabled
   sku_name                      = var.env.databases.postgresql.sku_name
-  storage_mb                    = 32768
-  storage_tier                  = "P4"
-  version                       = "16"
+  private_dns_zone_id           = azurerm_private_dns_zone.this["privatelink.postgres.database.azure.com"].id
+  storage_mb                    = var.env.databases.postgresql.storage_mb
+  storage_tier                  = var.env.databases.postgresql.storage_tier
+  version                       = var.env.databases.postgresql.version
+
 
   lifecycle {
     ignore_changes = [
