@@ -22,7 +22,7 @@ resource "azurerm_key_vault" "this" {
   tags = local.tags
 }
 
-module "role_assignments" {
+module "kv_admin" {
   source = "../modules/azure//authorization/role-assignment"
 
   object_id            = data.azurerm_client_config.current.object_id
@@ -52,6 +52,7 @@ resource "azurerm_key_vault_secret" "this" {
 
   depends_on = [
     azurerm_key_vault.this,
+    module.kv_admin,
     random_password.this
   ]
 
