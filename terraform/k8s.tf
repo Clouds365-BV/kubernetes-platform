@@ -18,10 +18,15 @@ resource "azurerm_kubernetes_cluster" "this" {
   workload_identity_enabled         = true
   private_cluster_enabled           = true
   private_dns_zone_id               = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
+  kubernetes_version                = "1.29"
   local_account_disabled            = true
   role_based_access_control_enabled = true
-  kubernetes_version                = "1.29"
   oidc_issuer_enabled               = true
+  azure_active_directory_role_based_access_control {
+    azure_rbac_enabled     = true
+    managed                = true
+    admin_group_object_ids = ["32105cb5-16af-4fe5-9ab3-1b229906c701"]
+  }
 
   default_node_pool {
     name                 = "system"
