@@ -24,7 +24,6 @@ resource "azurerm_kubernetes_cluster" "this" {
   oidc_issuer_enabled               = true
   azure_active_directory_role_based_access_control {
     azure_rbac_enabled     = true
-    managed                = true
     admin_group_object_ids = ["32105cb5-16af-4fe5-9ab3-1b229906c701"]
   }
 
