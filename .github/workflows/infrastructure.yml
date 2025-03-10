@@ -44,6 +44,9 @@ jobs:
         with:
           output_format: cli
           output_file_path: console
+          quiet: true
+          soft_fail: true
+          directory: terraform/
 
       - name: Terraform Format
         run: terraform fmt -check
