@@ -57,9 +57,11 @@ resource "azurerm_private_dns_zone" "this" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "this" {
+  for_each = try(var.env.private_dns_zone, {})
+
   name                  = split("/", azurerm_virtual_network.this.id)[8]
   resource_group_name   = azurerm_resource_group.this.name
-  private_dns_zone_name = azurerm_private_dns_zone.this.name
+  private_dns_zone_name = azurerm_private_dns_zone.this[each.key].name
   virtual_network_id    = azurerm_virtual_network.this.id
   registration_enabled  = false
 
