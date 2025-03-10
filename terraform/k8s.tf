@@ -35,7 +35,13 @@ resource "azurerm_kubernetes_cluster" "this" {
     max_count            = 10
     auto_scaling_enabled = true
     orchestrator_version = "1.29"
-    tags                 = local.tags
+    upgrade_settings {
+      drain_timeout_in_minutes      = 0
+      max_surge                     = "10%"
+      node_soak_duration_in_minutes = 0
+    }
+
+    tags = local.tags
   }
 
   network_profile {
