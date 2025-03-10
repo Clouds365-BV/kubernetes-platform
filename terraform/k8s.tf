@@ -20,7 +20,7 @@ resource "azurerm_kubernetes_cluster" "this" {
   private_dns_zone_id               = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
   local_account_disabled            = true
   role_based_access_control_enabled = true
-  kubernetes_version                = "1.28"
+  kubernetes_version                = "1.29"
   oidc_issuer_enabled               = true
 
   default_node_pool {
@@ -30,7 +30,7 @@ resource "azurerm_kubernetes_cluster" "this" {
     min_count            = 1
     max_count            = 10
     auto_scaling_enabled = true
-    orchestrator_version = "1.28"
+    orchestrator_version = "1.29"
     tags                 = local.tags
   }
 
