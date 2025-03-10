@@ -61,11 +61,15 @@
       }
     },
     "key_vault": {
+      "sku_name": "standard",
+      "public_network_access_enabled": true,
       "secrets": {
         "postgresql-admin-username": {
           "value": "psqladmin"
         },
-        "postgresql-admin-password": {}
+        "postgresql-admin-password": {
+          "length": 24
+        }
       }
     },
     "databases": {

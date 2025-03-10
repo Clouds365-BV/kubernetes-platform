@@ -2,8 +2,8 @@ resource "azurerm_postgresql_flexible_server" "this" {
   name                          = "${local.resource_name_prefix}-psql"
   location                      = azurerm_resource_group.this.location
   resource_group_name           = azurerm_resource_group.this.name
-  administrator_login           = var.env.databases.postgresql.administrator_login
-  administrator_password        = var.env.databases.postgresql.administrator_password
+  administrator_login           = azurerm_key_vault_secret.this[var.env.databases.postgresql.administrator_login].value
+  administrator_password        = azurerm_key_vault_secret.this[var.env.databases.postgresql.administrator_password].value
   delegated_subnet_id           = azurerm_subnet.this[var.env.databases.postgresql.subnet].id
   backup_retention_days         = 7
   public_network_access_enabled = var.env.databases.postgresql.public_network_access_enabled
@@ -26,7 +26,7 @@ module "diagnostic_settings_postgres" {
   source = "../modules/azure/monitor/diagnostic-settings"
 
   name                       = "postgres-diagnostic-settings"
-  target_resource_id         = azurerm_virtual_network.this.id
+  target_resource_id         = azurerm_postgresql_flexible_server.this.id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
   logs = [
     {
