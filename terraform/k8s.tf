@@ -33,6 +33,10 @@ resource "azurerm_kubernetes_cluster" "this" {
   oms_agent {
     log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
   }
+  network_profile {
+    network_plugin = "azure"
+    network_policy = "azure"
+  }
   #azure_policy_enabled = true
 
   default_node_pool {
