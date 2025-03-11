@@ -67,3 +67,34 @@ resource "azurerm_private_dns_zone_virtual_network_link" "this" {
 
   tags = local.tags
 }
+
+resource "azurerm_public_ip" "this" {
+  for_each = try(var.env.public_ips, {})
+
+  name                = try(each.value.name, "${local.resource_name_prefix}${each.key}-pip")
+  location            = azurerm_resource_group.this.location
+  resource_group_name = azurerm_resource_group.this.name
+  allocation_method   = try(each.value.allocation_method, "Dynamic")
+  sku                 = try(each.value.sku, "Basic")
+  sku_tier            = try(each.value.sku_tier, "Regional")
+
+  tags = local.tags
+}
+
+resource "azurerm_bastion_host" "this" {
+  for_each = try(var.env.bastion_hosts, {})
+
+  name                = try(each.value.name, "${local.resource_name_prefix}${each.key}-bastion")
+  location            = azurerm_resource_group.this.location
+  resource_group_name = azurerm_resource_group.this.name
+  sku                 = try(each.value.sku, "Basic")
+  tunneling_enabled   = try(each.value.tunneling_enabled, false)
+
+  ip_configuration {
+    name                 = "configuration"
+    subnet_id            = azurerm_subnet.this[each.value.subnet].id
+    public_ip_address_id = azurerm_public_ip.this[each.value.public_ip].id
+  }
+
+  tags = local.tags
+}

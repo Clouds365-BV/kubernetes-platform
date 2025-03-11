@@ -47,6 +47,18 @@
           "address_prefixes": [
             "10.10.30.0/24"
           ]
+        },
+        "bastion": {
+          "name": "AzureBastionSubnet",
+          "address_prefixes": [
+            "10.10.40.0/24"
+          ]
+        },
+        "azure_firewall": {
+          "name": "AzureFirewallSubnet",
+          "address_prefixes": [
+            "10.10.50.0/24"
+          ]
         }
       }
     },
@@ -60,6 +72,24 @@
         "virtual_networks": {
           "main": {}
         }
+      }
+    },
+    "public_ips": {
+      "bastion": {
+        "sku": "Standard",
+        "allocation_method": "Static"
+      },
+      "azure_lb": {
+        "sku": "Standard",
+        "allocation_method": "Static"
+      }
+    },
+    "bastion_hosts": {
+      "org": {
+        "sku": "Standard",
+        "tunneling_enabled": true,
+        "subnet": "bastion",
+        "public_ip": "bastion"
       }
     },
     "identity": {
