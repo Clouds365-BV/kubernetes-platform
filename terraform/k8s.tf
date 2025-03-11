@@ -61,10 +61,6 @@ resource "azurerm_kubernetes_cluster" "this" {
     tags = local.tags
   }
 
-  network_profile {
-    network_plugin = "azure"
-  }
-
   identity {
     type = "UserAssigned"
     identity_ids = [
