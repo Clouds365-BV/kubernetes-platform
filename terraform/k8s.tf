@@ -37,7 +37,7 @@ resource "azurerm_kubernetes_cluster" "this" {
 
   default_node_pool {
     name                         = "system"
-    temporary_name_for_rotation  = "system_rotation"
+    temporary_name_for_rotation  = "sysrotation"
     vm_size                      = "Standard_D2s_v6"
     vnet_subnet_id               = azurerm_subnet.this["k8s"].id
     min_count                    = 1
