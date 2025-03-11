@@ -93,12 +93,6 @@
       }
     },
     "identity": {
-      "web-app": {
-        "container_registry": {
-          "name": "test",
-          "role": "AcrPull"
-        }
-      }
     },
     "key_vault": {
       "sku_name": "standard",
