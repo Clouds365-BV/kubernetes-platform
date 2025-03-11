@@ -31,13 +31,13 @@ resource "azurerm_kubernetes_cluster" "this" {
     secret_rotation_enabled = true
   }
   oms_agent {
-    enabled                    = true
     log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
   }
   #azure_policy_enabled = true
 
   default_node_pool {
     name                         = "system"
+    temporary_name_for_rotation  = "system_rotation"
     vm_size                      = "Standard_D2s_v6"
     vnet_subnet_id               = azurerm_subnet.this["k8s"].id
     min_count                    = 1
@@ -46,7 +46,7 @@ resource "azurerm_kubernetes_cluster" "this" {
     orchestrator_version         = "1.29"
     os_disk_type                 = "Ephemeral"
     max_pods                     = 50
-    enable_host_encryption       = true
+    host_encryption_enabled      = true
     only_critical_addons_enabled = true
     upgrade_settings {
       drain_timeout_in_minutes      = 0
