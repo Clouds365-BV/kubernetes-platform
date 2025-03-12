@@ -45,11 +45,11 @@ resource "azurerm_kubernetes_cluster" "this" {
 
   default_node_pool {
     name                         = "system"
-    temporary_name_for_rotation  = "sysrotation"
-    vm_size                      = "Standard_D2s_v3"
+    temporary_name_for_rotation  = "systemrot"
+    vm_size                      = "Standard_D2s_v6"
     vnet_subnet_id               = azurerm_subnet.this["k8s"].id
     min_count                    = 1
-    max_count                    = 10
+    max_count                    = 3
     auto_scaling_enabled         = true
     orchestrator_version         = "1.29"
     max_pods                     = 50
@@ -59,6 +59,10 @@ resource "azurerm_kubernetes_cluster" "this" {
       drain_timeout_in_minutes      = 0
       max_surge                     = "10%"
       node_soak_duration_in_minutes = 0
+    }
+
+    node_labels = {
+      "drones/nodepool" = "system"
     }
 
     tags = local.tags
@@ -71,8 +75,28 @@ resource "azurerm_kubernetes_cluster" "this" {
     ]
   }
 
-  lifecycle {
-    ignore_changes = [location, disk_encryption_set_id, identity]
+  tags = local.tags
+}
+
+resource "azurerm_kubernetes_cluster_node_pool" "blog" {
+  name                        = "blog"
+  kubernetes_cluster_id       = azurerm_kubernetes_cluster.this.id
+  vnet_subnet_id              = azurerm_subnet.this["k8s-blog"].id
+  temporary_name_for_rotation = "blogrot"
+  vm_size                     = "Standard_D2s_v6"
+  min_count                   = 1
+  max_count                   = 10
+  auto_scaling_enabled        = true
+  orchestrator_version        = "1.29"
+  host_encryption_enabled     = true
+  upgrade_settings {
+    drain_timeout_in_minutes      = 0
+    max_surge                     = "10%"
+    node_soak_duration_in_minutes = 0
+  }
+
+  node_labels = {
+    "drones/nodepool" = "blog"
   }
 
   tags = local.tags
