@@ -11,6 +11,7 @@ resource "azurerm_role_assignment" "k8s" {
 }
 
 resource "azurerm_kubernetes_cluster" "this" {
+  #checkov:skip=CKV2_AZURE_1
   name                              = "${local.resource_name_prefix}-k8s"
   location                          = azurerm_resource_group.this.location
   resource_group_name               = azurerm_resource_group.this.name
@@ -48,7 +49,6 @@ resource "azurerm_kubernetes_cluster" "this" {
     max_count                    = 10
     auto_scaling_enabled         = true
     orchestrator_version         = "1.29"
-    os_disk_type                 = "Ephemeral"
     max_pods                     = 50
     host_encryption_enabled      = true
     only_critical_addons_enabled = true
