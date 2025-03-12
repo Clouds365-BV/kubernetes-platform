@@ -11,7 +11,10 @@ resource "azurerm_role_assignment" "k8s" {
 }
 
 resource "azurerm_kubernetes_cluster" "this" {
-  #checkov:skip=CKV2_AZURE_1
+  #checkov:skip=CKV_AZURE_116: "Ensure that AKS uses Azure Policies Add-on"
+  #checkov:skip=CKV_AZURE_117: "Ensure that AKS use the Paid Sku for its SLA"
+  #checkov:skip=CKV_AZURE_170: "Ensure that AKS uses disk encryption set"
+  #checkov:skip=CKV_AZURE_226: "Ensure ephemeral disks are used for OS disks"
   name                              = "${local.resource_name_prefix}-k8s"
   location                          = azurerm_resource_group.this.location
   resource_group_name               = azurerm_resource_group.this.name

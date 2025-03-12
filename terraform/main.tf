@@ -6,6 +6,7 @@ resource "azurerm_resource_group" "this" {
 }
 
 resource "azurerm_storage_account" "this" {
+  #checkov:skip=CKV2_AZURE_1: "Ensure storage for critical data are encrypted with Customer Managed Key"
   name                            = replace(replace("${local.resource_name_prefix}-st", "-", ""), "_", "")
   location                        = azurerm_resource_group.this.location
   resource_group_name             = azurerm_resource_group.this.name
