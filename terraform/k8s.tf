@@ -29,8 +29,10 @@ resource "azurerm_kubernetes_cluster" "this" {
   automatic_upgrade_channel         = "patch"
   node_os_upgrade_channel           = "SecurityPatch"
   azure_active_directory_role_based_access_control {
-    azure_rbac_enabled     = true
-    admin_group_object_ids = ["32105cb5-16af-4fe5-9ab3-1b229906c701"]
+    azure_rbac_enabled = true
+    admin_group_object_ids = [
+      "4231288e-ea6d-46c4-8e2d-58bcdf884831"
+    ]
   }
   key_vault_secrets_provider {
     secret_rotation_enabled = true
