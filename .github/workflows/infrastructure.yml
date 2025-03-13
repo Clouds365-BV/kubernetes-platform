@@ -14,7 +14,8 @@ on:
 
 jobs:
   terraform:
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
       ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
