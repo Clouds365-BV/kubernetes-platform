@@ -48,6 +48,11 @@
             "10.10.30.0/24"
           ]
         },
+        "k8s-blog": {
+          "address_prefixes": [
+            "10.10.31.0/24"
+          ]
+        },
         "bastion": {
           "name": "AzureBastionSubnet",
           "address_prefixes": [
