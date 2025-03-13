@@ -13,27 +13,22 @@ resource "azurerm_role_assignment" "k8s-agic" {
 resource "helm_release" "agic" {
   name       = "agic"
   repository = "oci://mcr.microsoft.com/azure-application-gateway/charts/ingress-azure"
-  chart      = "ingress-azureapplicationgateway"
+  chart      = "ingress-azure"
   namespace  = "kube-system"
 
   set {
-    name  = "appgw.subscriptionId"
-    value = data.azurerm_client_config.current.subscription_id
+    name  = "appgw.applicationGatewayID"
+    value = azurerm_application_gateway.this.id
   }
 
   set {
-    name  = "appgw.resourceGroup"
-    value = azurerm_resource_group.this.name
+    name  = "armAuth.type"
+    value = "workloadIdentity"
   }
 
   set {
-    name  = "appgw.name"
-    value = azurerm_application_gateway.this.name
-  }
-
-  set {
-    name  = "kubernetes.watchNamespace"
-    value = "*" # Or a specific namespace where your application resides.
+    name  = "armAuth.identityClientID"
+    value = azurerm_user_assigned_identity.k8s-agic.principal_id
   }
 
   set {
