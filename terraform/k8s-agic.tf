@@ -4,7 +4,7 @@ resource "azurerm_user_assigned_identity" "k8s-agic" {
   location            = azurerm_resource_group.this.location
 }
 
-resource "azurerm_role_assignment" "k8s" {
+resource "azurerm_role_assignment" "k8s-agic" {
   scope                = azurerm_application_gateway.this.id
   role_definition_name = "Contributor"
   principal_id         = azurerm_user_assigned_identity.k8s-agic.principal_id
