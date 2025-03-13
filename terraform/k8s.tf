@@ -26,7 +26,8 @@ resource "azurerm_kubernetes_cluster" "this" {
   local_account_disabled            = true
   role_based_access_control_enabled = true
   oidc_issuer_enabled               = true
-  automatic_upgrade_channel         = "stable"
+  automatic_upgrade_channel         = "none"
+  node_os_upgrade_channel           = "SecurityPatch"
   azure_active_directory_role_based_access_control {
     azure_rbac_enabled     = true
     admin_group_object_ids = ["32105cb5-16af-4fe5-9ab3-1b229906c701"]

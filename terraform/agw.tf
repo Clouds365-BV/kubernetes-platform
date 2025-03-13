@@ -11,7 +11,7 @@ resource "azurerm_application_gateway" "this" {
 
   gateway_ip_configuration {
     name      = "AppGatewayIpConfig"
-    subnet_id = azurerm_subnet.this["AppGateway"].id
+    subnet_id = azurerm_subnet.this["app_gateway"].id
   }
 
   frontend_port {
@@ -26,7 +26,7 @@ resource "azurerm_application_gateway" "this" {
 
   frontend_ip_configuration {
     name                 = "AppGatewayFrontendIp"
-    public_ip_address_id = azurerm_public_ip.this["AppGateway"].id
+    public_ip_address_id = azurerm_public_ip.this["app_gateway"].id
   }
 
   backend_address_pool {
