@@ -10,7 +10,7 @@ resource "azurerm_application_gateway" "this" {
   }
 
   ssl_policy {
-    disabled_ssl_protocols = ["TLSv1_0", "TLSv1_1"]
+    disabled_protocols = ["TLSv1_0", "TLSv1_1"]
   }
 
   gateway_ip_configuration {
