@@ -81,7 +81,7 @@ resource "azurerm_kubernetes_cluster" "this" {
 resource "azurerm_kubernetes_cluster_node_pool" "blog" {
   name                        = "blog"
   kubernetes_cluster_id       = azurerm_kubernetes_cluster.this.id
-  vnet_subnet_id              = azurerm_subnet.this["k8s-blog"].id
+  vnet_subnet_id              = azurerm_subnet.this["k8s"].id
   temporary_name_for_rotation = "blogrot"
   vm_size                     = "Standard_D2s_v6"
   min_count                   = 1

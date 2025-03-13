@@ -48,21 +48,19 @@
             "10.10.30.0/24"
           ]
         },
-        "k8s-blog": {
-          "address_prefixes": [
-            "10.10.31.0/24"
-          ]
-        },
-        "bastion": {
-          "name": "AzureBastionSubnet",
+        "AzureBastionSubnet": {
           "address_prefixes": [
             "10.10.40.0/24"
           ]
         },
-        "azure_firewall": {
-          "name": "AzureFirewallSubnet",
+        "AzureFirewallSubnet": {
           "address_prefixes": [
-            "10.10.50.0/24"
+            "10.10.41.0/24"
+          ]
+        },
+        "AppGateway": {
+          "address_prefixes": [
+            "10.10.42.0/24"
           ]
         }
       }
@@ -77,6 +75,31 @@
         "virtual_networks": {
           "main": {}
         }
+      },
+      "privatelink.blob.core.windows.net": {
+        "virtual_networks": {
+          "main": {}
+        }
+      },
+      "privatelink.table.core.windows.net": {
+        "virtual_networks": {
+          "main": {}
+        }
+      },
+      "privatelink.queue.core.windows.net": {
+        "virtual_networks": {
+          "main": {}
+        }
+      },
+      "privatelink.file.core.windows.net": {
+        "virtual_networks": {
+          "main": {}
+        }
+      },
+      "privatelink.vault.azure.net": {
+        "virtual_networks": {
+          "main": {}
+        }
       }
     },
     "public_ips": {
@@ -84,7 +107,7 @@
         "sku": "Standard",
         "allocation_method": "Static"
       },
-      "azure_lb": {
+      "app_gateway": {
         "sku": "Standard",
         "allocation_method": "Static"
       }
