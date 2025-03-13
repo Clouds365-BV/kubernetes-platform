@@ -58,5 +58,6 @@ resource "azurerm_application_gateway" "this" {
     backend_address_pool_name  = "AksBackendPool"
     backend_http_settings_name = "AksBackendHttpSettings"
     rule_type                  = "Basic"
+    priority                   = 10
   }
 }
