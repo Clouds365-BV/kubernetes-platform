@@ -12,7 +12,7 @@ resource "azurerm_role_assignment" "k8s-agic" {
 
 resource "helm_release" "agic" {
   name       = "agic"
-  repository = "https://azure.github.io/application-gateway-kubernetes-ingress/"
+  repository = "oci://mcr.microsoft.com/azure-application-gateway/charts/ingress-azure"
   chart      = "ingress-azureapplicationgateway"
   namespace  = "kube-system"
 
