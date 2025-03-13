@@ -9,6 +9,10 @@ resource "azurerm_application_gateway" "this" {
     capacity = 2
   }
 
+  ssl_policy {
+    disabled_ssl_protocols = ["TLSv1_0", "TLSv1_1"]
+  }
+
   gateway_ip_configuration {
     name      = "AppGatewayIpConfig"
     subnet_id = azurerm_subnet.this["app_gateway"].id
