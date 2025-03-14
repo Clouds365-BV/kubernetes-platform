@@ -27,7 +27,6 @@ resource "azurerm_kubernetes_cluster" "this" {
   local_account_disabled            = true
   role_based_access_control_enabled = true
   oidc_issuer_enabled               = true
-  oidc_issuer_url                   = "https://sts.windows.net/${data.azurerm_client_config.current.tenant_id}/"
   automatic_upgrade_channel         = "patch"
   node_os_upgrade_channel           = "SecurityPatch"
   image_cleaner_enabled             = true
