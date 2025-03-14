@@ -65,7 +65,7 @@ resource "azurerm_kubernetes_cluster" "this" {
 resource "azurerm_role_assignment" "k8s" {
   scope                = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
   role_definition_name = "Private DNS Zone Contributor"
-  principal_id         = azurerm_kubernetes_cluster.this.identity.principal_id
+  principal_id         = azurerm_kubernetes_cluster.this.identity[0].principal_id
 }
 
 
