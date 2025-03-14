@@ -1,3 +1,15 @@
+resource "azurerm_user_assigned_identity" "k8s" {
+  name                = "${local.resource_name_prefix}-k8s-id"
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+}
+
+resource "azurerm_role_assignment" "k8s" {
+  scope                = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
+  role_definition_name = "Private DNS Zone Contributor"
+  principal_id         = azurerm_user_assigned_identity.k8s.principal_id
+}
+
 resource "azurerm_kubernetes_cluster" "this" {
   #checkov:skip=CKV_AZURE_116: "Ensure that AKS uses Azure Policies Add-on"
   #checkov:skip=CKV_AZURE_117: "Ensure that AKS use the Paid Sku for its SLA"
@@ -56,18 +68,14 @@ resource "azurerm_kubernetes_cluster" "this" {
   }
 
   identity {
-    type = "SystemAssigned"
+    type = "SystemAssigned,UserAssigned"
+    identity_ids = [
+      azurerm_user_assigned_identity.k8s.id
+    ]
   }
 
   tags = local.tags
 }
-
-resource "azurerm_role_assignment" "k8s" {
-  scope                = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
-  role_definition_name = "Private DNS Zone Contributor"
-  principal_id         = azurerm_kubernetes_cluster.this.identity[0].principal_id
-}
-
 
 resource "azurerm_kubernetes_cluster_node_pool" "blog" {
   name                        = "blog"
