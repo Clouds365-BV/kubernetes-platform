@@ -68,7 +68,7 @@ resource "azurerm_kubernetes_cluster" "this" {
   }
 
   identity {
-    type = "SystemAssigned,UserAssigned"
+    type = "UserAssigned"
     identity_ids = [
       azurerm_user_assigned_identity.k8s.id
     ]
