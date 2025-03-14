@@ -39,16 +39,9 @@ provider "helm" {
         "get-token",
         "--login",
         "spn",
-        "--environment",
-        "AzurePublicCloud",
-        "--tenant-id",
-        data.azurerm_client_config.current.tenant_id,
         "--server-id",
         "6dae42f8–4368–4678–94ff-3960e28e3630",
-        "--client-id",
-        var.client_id,
-        "--client-secret",
-        var.client_secret,
+        "--use-azurerm-env-vars"
       ]
     }
   }
