@@ -15,17 +15,19 @@ resource "azurerm_kubernetes_cluster" "this" {
   #checkov:skip=CKV_AZURE_117: "Ensure that AKS use the Paid Sku for its SLA"
   #checkov:skip=CKV_AZURE_170: "Ensure that AKS uses disk encryption set"
   #checkov:skip=CKV_AZURE_226: "Ensure ephemeral disks are used for OS disks"
-  name                              = "${local.resource_name_prefix}-k8s"
-  location                          = azurerm_resource_group.this.location
-  resource_group_name               = azurerm_resource_group.this.name
-  dns_prefix                        = "${local.resource_name_prefix}-k8s"
-  workload_identity_enabled         = true
-  private_cluster_enabled           = true
+  name                      = "${local.resource_name_prefix}-k8s"
+  location                  = azurerm_resource_group.this.location
+  resource_group_name       = azurerm_resource_group.this.name
+  dns_prefix                = "${local.resource_name_prefix}-k8s"
+  workload_identity_enabled = true
+  private_cluster_enabled   = true
+  #private_cluster_public_fqdn_enabled = true
   private_dns_zone_id               = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
   kubernetes_version                = "1.30"
   local_account_disabled            = true
   role_based_access_control_enabled = true
   oidc_issuer_enabled               = true
+  oidc_issuer_url                   = "https://sts.windows.net/${data.azurerm_client_config.current.tenant_id}/"
   automatic_upgrade_channel         = "patch"
   node_os_upgrade_channel           = "SecurityPatch"
   image_cleaner_enabled             = true
@@ -79,6 +81,10 @@ resource "azurerm_kubernetes_cluster" "this" {
       azurerm_user_assigned_identity.k8s.id
     ]
   }
+
+  depends_on = [
+    azurerm_role_assignment.k8s
+  ]
 
   tags = local.tags
 }
