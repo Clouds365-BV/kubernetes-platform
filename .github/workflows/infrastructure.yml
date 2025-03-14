@@ -37,11 +37,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: test
-        run: >
-          kubelogin
-          get-token
-          --login spn
-          --server-id 6dae42f8–4368–4678–94ff-3960e28e3630
+        run: |
+          id
+          which az
+          which kubectl
+          which kubelogin
+          kubelogin \
+          get-token \
+          --login spn \
+          --server-id 6dae42f8–4368–4678–94ff-3960e28e3630 \
           --use-azurerm-env-vars
         working-directory: ./terraform
 
