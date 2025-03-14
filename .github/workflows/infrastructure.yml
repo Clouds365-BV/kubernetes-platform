@@ -21,6 +21,8 @@ jobs:
       ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
       ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
       ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
+      TF_VAR_client_id: "${{ secrets.AZURE_CLIENT_ID }}"
+      TF_VAR_client_secret: "${{ secrets.AZURE_CLIENT_SECRET }}"
       TF_LOG: "WARN"
     steps:
       - name: Select environment

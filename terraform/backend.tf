@@ -43,13 +43,13 @@ provider "helm" {
         "--environment",
         "AzurePublicCloud",
         "--tenant-id",
-        env(ARM_TENANT_ID),
+        data.azurerm_client_config.current.tenant_id,
         "--server-id",
         "6dae42f8–4368–4678–94ff-3960e28e3630",
         "--client-id",
-        env(ARM_CLIENT_ID),
+        var.client_id,
         "--client-secret",
-        env(ARM_CLIENT_SECRET)
+        var.client_secret,
       ]
     }
   }
