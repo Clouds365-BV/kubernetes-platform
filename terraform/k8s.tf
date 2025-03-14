@@ -29,6 +29,7 @@ resource "azurerm_kubernetes_cluster" "this" {
   automatic_upgrade_channel         = "patch"
   node_os_upgrade_channel           = "SecurityPatch"
   image_cleaner_enabled             = true
+  image_cleaner_interval_hours      = 168
   azure_active_directory_role_based_access_control {
     azure_rbac_enabled = true
     admin_group_object_ids = [
