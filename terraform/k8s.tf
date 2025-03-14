@@ -1,15 +1,3 @@
-resource "azurerm_user_assigned_identity" "k8s" {
-  name                = "${local.resource_name_prefix}-k8s-id"
-  resource_group_name = azurerm_resource_group.this.name
-  location            = azurerm_resource_group.this.location
-}
-
-resource "azurerm_role_assignment" "k8s" {
-  scope                = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
-  role_definition_name = "Private DNS Zone Contributor"
-  principal_id         = azurerm_user_assigned_identity.k8s.principal_id
-}
-
 resource "azurerm_kubernetes_cluster" "this" {
   #checkov:skip=CKV_AZURE_116: "Ensure that AKS uses Azure Policies Add-on"
   #checkov:skip=CKV_AZURE_117: "Ensure that AKS use the Paid Sku for its SLA"
@@ -22,12 +10,13 @@ resource "azurerm_kubernetes_cluster" "this" {
   workload_identity_enabled         = true
   private_cluster_enabled           = true
   private_dns_zone_id               = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
-  kubernetes_version                = "1.29"
+  kubernetes_version                = "1.30"
   local_account_disabled            = true
   role_based_access_control_enabled = true
   oidc_issuer_enabled               = true
   automatic_upgrade_channel         = "patch"
   node_os_upgrade_channel           = "SecurityPatch"
+  image_cleaner_enabled             = true
   azure_active_directory_role_based_access_control {
     azure_rbac_enabled = true
     admin_group_object_ids = [
@@ -54,15 +43,10 @@ resource "azurerm_kubernetes_cluster" "this" {
     min_count                    = 1
     max_count                    = 3
     auto_scaling_enabled         = true
-    orchestrator_version         = "1.29"
+    orchestrator_version         = "1.30"
     max_pods                     = 50
     host_encryption_enabled      = true
     only_critical_addons_enabled = true
-    upgrade_settings {
-      drain_timeout_in_minutes      = 0
-      max_surge                     = "10%"
-      node_soak_duration_in_minutes = 0
-    }
 
     node_labels = {
       "drones/nodepool" = "system"
@@ -72,14 +56,18 @@ resource "azurerm_kubernetes_cluster" "this" {
   }
 
   identity {
-    type = "UserAssigned"
-    identity_ids = [
-      azurerm_user_assigned_identity.k8s.id
-    ]
+    type = "SystemAssigned"
   }
 
   tags = local.tags
 }
+
+resource "azurerm_role_assignment" "k8s" {
+  scope                = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
+  role_definition_name = "Private DNS Zone Contributor"
+  principal_id         = azurerm_kubernetes_cluster.this.identity.principal_id
+}
+
 
 resource "azurerm_kubernetes_cluster_node_pool" "blog" {
   name                        = "blog"
@@ -90,13 +78,10 @@ resource "azurerm_kubernetes_cluster_node_pool" "blog" {
   min_count                   = 1
   max_count                   = 10
   auto_scaling_enabled        = true
-  orchestrator_version        = "1.29"
+  orchestrator_version        = "1.30"
   host_encryption_enabled     = true
-  upgrade_settings {
-    drain_timeout_in_minutes      = 0
-    max_surge                     = "10%"
-    node_soak_duration_in_minutes = 0
-  }
+  fips_enabled                = false
+  node_public_ip_enabled      = false
 
   node_labels = {
     "drones/nodepool" = "blog"
