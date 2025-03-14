@@ -60,6 +60,11 @@ resource "azurerm_kubernetes_cluster" "this" {
     max_pods                     = 50
     host_encryption_enabled      = true
     only_critical_addons_enabled = true
+    upgrade_settings {
+      drain_timeout_in_minutes      = 0
+      max_surge                     = "10%"
+      node_soak_duration_in_minutes = 0
+    }
 
     node_labels = {
       "drones/nodepool" = "system"
@@ -91,6 +96,11 @@ resource "azurerm_kubernetes_cluster_node_pool" "blog" {
   host_encryption_enabled     = true
   fips_enabled                = false
   node_public_ip_enabled      = false
+  upgrade_settings {
+    drain_timeout_in_minutes      = 0
+    max_surge                     = "10%"
+    node_soak_duration_in_minutes = 0
+  }
 
   node_labels = {
     "drones/nodepool" = "blog"
