@@ -29,11 +29,11 @@ provider "azurerm" {
 }
 
 provider "helm" {
+  debug = true
   kubernetes {
     host                   = data.azurerm_kubernetes_cluster.this.kube_config.0.host
     cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.this.kube_config.0.cluster_ca_certificate)
     exec {
-      debug       = true
       api_version = "client.authentication.k8s.io/v1beta1"
       command     = "kubelogin"
       args = [
