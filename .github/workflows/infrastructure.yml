@@ -47,7 +47,8 @@ jobs:
           get-token \
           --login spn \
           --server-id 6dae42f8–4368–4678–94ff-3960e28e3630 \
-          --use-azurerm-env-vars
+          --use-azurerm-env-vars \
+          --v 10
         working-directory: ./terraform
 
       - name: Setup Terraform
