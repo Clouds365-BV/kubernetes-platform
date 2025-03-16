@@ -4,7 +4,7 @@ resource "azurerm_role_assignment" "k8s-agic" {
   principal_id         = azurerm_kubernetes_cluster.this.ingress_application_gateway[0].ingress_application_gateway_identity[0].client_id
 }
 
-resource "azurerm_role_assignment" "k8s-agic" {
+resource "azurerm_role_assignment" "k8s-agic-rg-reader" {
   scope                = azurerm_resource_group.this.id
   role_definition_name = "Reader"
   principal_id         = azurerm_kubernetes_cluster.this.ingress_application_gateway[0].ingress_application_gateway_identity[0].client_id
