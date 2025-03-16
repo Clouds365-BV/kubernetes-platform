@@ -32,8 +32,7 @@ resource "azurerm_kubernetes_cluster" "this" {
   image_cleaner_enabled             = true
   image_cleaner_interval_hours      = 168
   ingress_application_gateway {
-    gateway_id   = azurerm_application_gateway.this.id
-    gateway_name = azurerm_application_gateway.this.name
+    gateway_id = azurerm_application_gateway.this.id
   }
   azure_active_directory_role_based_access_control {
     azure_rbac_enabled = true
