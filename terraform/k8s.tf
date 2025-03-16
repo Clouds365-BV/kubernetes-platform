@@ -4,10 +4,12 @@ resource "azurerm_user_assigned_identity" "k8s" {
   location            = azurerm_resource_group.this.location
 }
 
-resource "azurerm_role_assignment" "k8s" {
-  scope                = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
+module "k8s-roles" {
+  source = "../modules/azure/authorization/role-assignment"
+
+  object_id            = azurerm_user_assigned_identity.k8s.principal_id
   role_definition_name = "Private DNS Zone Contributor"
-  principal_id         = azurerm_user_assigned_identity.k8s.principal_id
+  resource_id          = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
 }
 
 resource "azurerm_kubernetes_cluster" "this" {
@@ -84,7 +86,7 @@ resource "azurerm_kubernetes_cluster" "this" {
   }
 
   depends_on = [
-    azurerm_role_assignment.k8s
+    module.k8s-roles
   ]
 
   tags = local.tags

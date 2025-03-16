@@ -6,10 +6,12 @@ locals {
   }
 }
 
-resource "azurerm_role_assignment" "k8s-agic" {
+module "k8s-agic-roles" {
+  source   = "../modules/azure/authorization/role-assignment"
   for_each = local.agic_roles
 
-  scope                = each.value
+  object_id = azurerm_kubernetes_cluster.this.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
+  #client_id
   role_definition_name = each.key
-  principal_id         = azurerm_kubernetes_cluster.this.ingress_application_gateway[0].ingress_application_gateway_identity[0].client_id
+  resource_id          = each.value
 }
