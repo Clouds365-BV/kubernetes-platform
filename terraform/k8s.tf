@@ -31,6 +31,10 @@ resource "azurerm_kubernetes_cluster" "this" {
   node_os_upgrade_channel           = "SecurityPatch"
   image_cleaner_enabled             = true
   image_cleaner_interval_hours      = 168
+  ingress_application_gateway {
+    gateway_id   = azurerm_application_gateway.this.id
+    gateway_name = azurerm_application_gateway.this.name
+  }
   azure_active_directory_role_based_access_control {
     azure_rbac_enabled = true
     admin_group_object_ids = [
@@ -50,17 +54,16 @@ resource "azurerm_kubernetes_cluster" "this" {
   #azure_policy_enabled = true
 
   default_node_pool {
-    name                         = "system"
-    temporary_name_for_rotation  = "systemrot"
-    vm_size                      = "Standard_D2s_v6"
-    vnet_subnet_id               = azurerm_subnet.this["k8s"].id
-    min_count                    = 1
-    max_count                    = 3
-    auto_scaling_enabled         = true
-    orchestrator_version         = "1.30"
-    max_pods                     = 50
-    host_encryption_enabled      = true
-    only_critical_addons_enabled = true
+    name                        = "system"
+    temporary_name_for_rotation = "systemrot"
+    vm_size                     = "Standard_D2s_v6"
+    vnet_subnet_id              = azurerm_subnet.this["k8s"].id
+    min_count                   = 1
+    max_count                   = 3
+    auto_scaling_enabled        = true
+    orchestrator_version        = "1.30"
+    max_pods                    = 50
+    host_encryption_enabled     = true
     upgrade_settings {
       drain_timeout_in_minutes      = 0
       max_surge                     = "10%"
