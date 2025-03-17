@@ -3,3 +3,9 @@ resource "kubernetes_namespace" "blog" {
     name = "blog"
   }
 }
+
+resource "kubernetes_namespace" "drone" {
+  metadata {
+    name = "drone"
+  }
+}

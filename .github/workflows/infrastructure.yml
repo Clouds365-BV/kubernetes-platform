@@ -66,13 +66,13 @@ jobs:
           az account set \
           --subscription $ARM_SUBSCRIPTION_ID
           
-          az aks get-credentials \
-          --context k8s \
-          --resource-group drone-dev-ne-rg \
-          --name drone-dev-ne-k8s \
-          --overwrite-existing
-          
-          kubelogin convert-kubeconfig -l azurecli
+          #az aks get-credentials \
+          #--context k8s \
+          #--resource-group drone-dev-ne-rg \
+          #--name drone-dev-ne-k8s \
+          #--overwrite-existing
+          #
+          #kubelogin convert-kubeconfig -l azurecli
 
       - name: Terraform Init
         run: >
