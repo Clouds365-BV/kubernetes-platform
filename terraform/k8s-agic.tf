@@ -8,6 +8,6 @@ module "k8s-agic-roles" {
   }
 
   object_id            = azurerm_kubernetes_cluster.this.ingress_application_gateway[0].ingress_application_gateway_identity[0].object_id
-  role_definition_name = each.key
+  role_definition_name = split("|", each.key)[2]
   resource_id          = each.value
 }
