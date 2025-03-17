@@ -6,7 +6,7 @@ resource "azurerm_application_gateway" "this" {
   sku {
     name     = "Standard_v2"
     tier     = "Standard_v2"
-    capacity = 2
+    capacity = 1
   }
 
   ssl_policy {
@@ -16,6 +16,11 @@ resource "azurerm_application_gateway" "this" {
   gateway_ip_configuration {
     name      = "AppGatewayIpConfig"
     subnet_id = azurerm_subnet.this["app_gateway"].id
+  }
+
+  ssl_certificate {
+    name                = "drones-shuttles"
+    key_vault_secret_id = azurerm_key_vault_certificate.drones_shuttles.secret_id
   }
 
   frontend_port {
@@ -50,6 +55,14 @@ resource "azurerm_application_gateway" "this" {
     frontend_ip_configuration_name = "AppGatewayFrontendIp"
     frontend_port_name             = "HttpPort"
     protocol                       = "Http"
+  }
+
+  http_listener {
+    name                           = "HttpsListener"
+    frontend_ip_configuration_name = "AppGatewayFrontendIp"
+    frontend_port_name             = "HttpsPort"
+    protocol                       = "Https"
+    ssl_certificate_name           = "drones-shuttles"
   }
 
   request_routing_rule {
