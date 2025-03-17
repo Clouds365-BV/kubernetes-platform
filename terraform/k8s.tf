@@ -24,7 +24,10 @@ resource "azurerm_kubernetes_cluster" "this" {
   resource_group_name       = azurerm_resource_group.this.name
   dns_prefix                = "${local.resource_name_prefix}-k8s"
   workload_identity_enabled = true
-  private_cluster_enabled   = true
+  workload_autoscaler_profile {
+    keda_enabled = true
+  }
+  private_cluster_enabled = true
   #private_cluster_public_fqdn_enabled = true
   private_dns_zone_id               = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
   kubernetes_version                = "1.30"

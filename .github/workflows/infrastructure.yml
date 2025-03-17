@@ -81,6 +81,9 @@ jobs:
 
       - name: Terraform Apply
         run: >
+          unset KUBE_CONFIG_FILE
+          unset KUBE_CONFIG_FILES
+          
           terraform apply
           -input=false
           tfplan
