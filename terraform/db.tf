@@ -12,6 +12,7 @@ resource "azurerm_postgresql_flexible_server" "this" {
   storage_mb                    = var.env.databases.postgresql.storage_mb
   storage_tier                  = var.env.databases.postgresql.storage_tier
   version                       = var.env.databases.postgresql.version
+  geo_redundant_backup_enabled  = true
 
 
   lifecycle {

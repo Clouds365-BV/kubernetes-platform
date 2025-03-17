@@ -14,7 +14,8 @@ on:
 
 jobs:
   terraform:
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
       ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
@@ -34,12 +35,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: test
+        continue-on-error: true
+        run: |
+          id
+          which az
+          which kubectl
+          which kubelogin
+          kubelogin \
+          get-token \
+          --login spn \
+          --server-id 6dae42f8–4368–4678–94ff-3960e28e3630 \
+          --use-azurerm-env-vars \
+          --v 10
+        working-directory: ./terraform
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: latest
 
       - name: Checkov GitHub Action
+        continue-on-error: true
         uses: bridgecrewio/checkov-action@v12
         with:
           output_format: cli

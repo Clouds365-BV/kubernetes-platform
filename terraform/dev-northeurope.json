@@ -47,6 +47,28 @@
           "address_prefixes": [
             "10.10.30.0/24"
           ]
+        },
+        "k8s-blog": {
+          "address_prefixes": [
+            "10.10.31.0/24"
+          ]
+        },
+        "bastion": {
+          "name": "AzureBastionSubnet",
+          "address_prefixes": [
+            "10.10.40.0/24"
+          ]
+        },
+        "azure_firewall": {
+          "name:": "AzureFirewallSubnet",
+          "address_prefixes": [
+            "10.10.41.0/24"
+          ]
+        },
+        "app_gateway": {
+          "address_prefixes": [
+            "10.10.42.0/24"
+          ]
         }
       }
     },
@@ -60,15 +82,52 @@
         "virtual_networks": {
           "main": {}
         }
+      },
+      "privatelink.blob.core.windows.net": {
+        "virtual_networks": {
+          "main": {}
+        }
+      },
+      "privatelink.table.core.windows.net": {
+        "virtual_networks": {
+          "main": {}
+        }
+      },
+      "privatelink.queue.core.windows.net": {
+        "virtual_networks": {
+          "main": {}
+        }
+      },
+      "privatelink.file.core.windows.net": {
+        "virtual_networks": {
+          "main": {}
+        }
+      },
+      "privatelink.vault.azure.net": {
+        "virtual_networks": {
+          "main": {}
+        }
+      }
+    },
+    "public_ips": {
+      "bastion": {
+        "sku": "Standard",
+        "allocation_method": "Static"
+      },
+      "app_gateway": {
+        "sku": "Standard",
+        "allocation_method": "Static"
+      }
+    },
+    "bastion_hosts": {
+      "org": {
+        "sku": "Standard",
+        "tunneling_enabled": true,
+        "subnet": "bastion",
+        "public_ip": "bastion"
       }
     },
     "identity": {
-      "web-app": {
-        "container_registry": {
-          "name": "test",
-          "role": "AcrPull"
-        }
-      }
     },
     "key_vault": {
       "sku_name": "standard",

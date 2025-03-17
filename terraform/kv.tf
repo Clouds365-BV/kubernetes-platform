@@ -4,12 +4,12 @@ resource "azurerm_key_vault" "this" {
   resource_group_name             = azurerm_resource_group.this.name
   tenant_id                       = data.azurerm_client_config.current.tenant_id
   sku_name                        = var.env.key_vault.sku_name
-  purge_protection_enabled        = false
+  purge_protection_enabled        = true
   enabled_for_disk_encryption     = true
   enabled_for_deployment          = true
   enabled_for_template_deployment = true
   enable_rbac_authorization       = true
-  soft_delete_retention_days      = 90
+  soft_delete_retention_days      = 7
   public_network_access_enabled   = var.env.key_vault.public_network_access_enabled
 
   network_acls {
@@ -23,7 +23,7 @@ resource "azurerm_key_vault" "this" {
 }
 
 module "kv_admin" {
-  source = "../modules/azure//authorization/role-assignment"
+  source = "../modules/azure/authorization/role-assignment"
 
   object_id            = data.azurerm_client_config.current.object_id
   role_definition_name = "Key Vault Administrator"
