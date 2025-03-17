@@ -57,6 +57,34 @@ resource "azurerm_application_gateway" "this" {
     public_ip_address_id = azurerm_public_ip.this["app_gateway"].id
   }
 
+  backend_address_pool {
+    name = "AksBackendPool"
+  }
+
+  backend_http_settings {
+    name                  = "AksBackendHttpSettings"
+    cookie_based_affinity = "Disabled"
+    port                  = 80
+    protocol              = "Http"
+    request_timeout       = 20
+  }
+
+  http_listener {
+    name                           = "HttpListener"
+    frontend_ip_configuration_name = "AppGatewayFrontendIp"
+    frontend_port_name             = "HttpPort"
+    protocol                       = "Http"
+  }
+
+  request_routing_rule {
+    name                       = "HttpRoutingRule"
+    http_listener_name         = "HttpListener"
+    backend_address_pool_name  = "AksBackendPool"
+    backend_http_settings_name = "AksBackendHttpSettings"
+    rule_type                  = "Basic"
+    priority                   = 10
+  }
+
   identity {
     type = "UserAssigned"
     identity_ids = [
@@ -64,17 +92,17 @@ resource "azurerm_application_gateway" "this" {
     ]
   }
 
-  lifecycle {
-    ignore_changes = [
-      backend_address_pool,
-      backend_http_settings,
-      http_listener,
-      probe,
-      request_routing_rule,
-      tags["ingress-for-aks-cluster-id"],
-      tags["managed-by-k8s-ingress"],
-    ]
-  }
+  # lifecycle {
+  #   ignore_changes = [
+  #     backend_address_pool,
+  #     backend_http_settings,
+  #     http_listener,
+  #     probe,
+  #     request_routing_rule,
+  #     tags["ingress-for-aks-cluster-id"],
+  #     tags["managed-by-k8s-ingress"],
+  #   ]
+  # }
 
   depends_on = [
     module.agw-roles
