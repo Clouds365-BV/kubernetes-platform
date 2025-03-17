@@ -72,7 +72,7 @@ jobs:
           --name drone-dev-ne-k8s \
           --overwrite-existing
           
-          #kubelogin convert-kubeconfig -l azurecli
+          kubelogin convert-kubeconfig -l azurecli
 
       - name: Terraform Init
         run: >
