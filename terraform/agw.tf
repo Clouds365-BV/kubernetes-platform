@@ -92,17 +92,17 @@ resource "azurerm_application_gateway" "this" {
     ]
   }
 
-  # lifecycle {
-  #   ignore_changes = [
-  #     backend_address_pool,
-  #     backend_http_settings,
-  #     http_listener,
-  #     probe,
-  #     request_routing_rule,
-  #     tags["ingress-for-aks-cluster-id"],
-  #     tags["managed-by-k8s-ingress"],
-  #   ]
-  # }
+  lifecycle {
+    ignore_changes = [
+      backend_address_pool,
+      backend_http_settings,
+      http_listener,
+      probe,
+      request_routing_rule,
+      tags["ingress-for-aks-cluster-id"],
+      tags["managed-by-k8s-ingress"],
+    ]
+  }
 
   depends_on = [
     module.agw-roles
