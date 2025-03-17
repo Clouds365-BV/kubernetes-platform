@@ -18,6 +18,8 @@ jobs:
     env:
       ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
       ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+      ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+      ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
     runs-on: self-hosted
     steps:
       - name: Select environment
@@ -53,9 +55,6 @@ jobs:
         working-directory: ./terraform
 
       - name: az login
-        env:
-          ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
-          ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
         run: |
           az login \
           --service-principal \
