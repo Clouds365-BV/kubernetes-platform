@@ -1,3 +1,17 @@
+resource "azurerm_user_assigned_identity" "agw" {
+  name                = "${local.resource_name_prefix}-agw-id"
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+}
+
+module "agw-roles" {
+  source = "../modules/azure/authorization/role-assignment"
+
+  object_id            = azurerm_user_assigned_identity.agw.principal_id
+  role_definition_name = "Azure Key Vault Secrets User"
+  resource_id          = azurerm_key_vault.this.id
+}
+
 resource "azurerm_application_gateway" "this" {
   name                = "${local.resource_name_prefix}-agw"
   location            = azurerm_resource_group.this.location
@@ -73,4 +87,13 @@ resource "azurerm_application_gateway" "this" {
     rule_type                  = "Basic"
     priority                   = 10
   }
+
+  identity {
+    type = "UserAssigned"
+    identity_ids = [
+      azurerm_user_assigned_identity.agw.id
+    ]
+  }
+
+  tags = local.tags
 }
