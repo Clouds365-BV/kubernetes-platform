@@ -71,7 +71,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "this" {
 resource "azurerm_public_ip" "this" {
   for_each = try(var.env.public_ips, {})
 
-  name                = try(each.value.name, "${local.resource_name_prefix}${each.key}-pip")
+  name                = try(each.value.name, "${local.resource_name_prefix}-${each.key}-pip")
   location            = azurerm_resource_group.this.location
   resource_group_name = azurerm_resource_group.this.name
   allocation_method   = try(each.value.allocation_method, "Dynamic")
@@ -84,7 +84,7 @@ resource "azurerm_public_ip" "this" {
 resource "azurerm_bastion_host" "this" {
   for_each = try(var.env.bastion_hosts, {})
 
-  name                = try(each.value.name, "${local.resource_name_prefix}${each.key}-bastion")
+  name                = try(each.value.name, "${local.resource_name_prefix}-${each.key}-bastion")
   location            = azurerm_resource_group.this.location
   resource_group_name = azurerm_resource_group.this.name
   sku                 = try(each.value.sku, "Basic")
