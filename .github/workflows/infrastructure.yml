@@ -16,11 +16,6 @@ jobs:
   terraform:
     #runs-on: ubuntu-latest
     runs-on: self-hosted
-    env:
-      ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
-      ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-      ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
-      ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
     steps:
       - name: Select environment
         run: |
@@ -54,6 +49,29 @@ jobs:
         run: terraform fmt -check
         working-directory: ./terraform
 
+      - name: az login
+        env:
+          ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+          ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+          ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+          ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
+        run: |
+          az login \
+          --service-principal \
+          --username $ARM_CLIENT_ID \
+          --password $ARM_CLIENT_SECRET \
+          --tenant $ARM_TENANT_ID
+          
+          az account set \
+          --subscription $ARM_SUBSCRIPTION_ID
+          
+          az aks get-credentials \
+          --resource-group drone-dev-ne-rg \
+          --name drone-dev-ne-k8s \
+          --overwrite-existing
+          
+          #kubelogin convert-kubeconfig -l azurecli
+
       - name: Terraform Init
         run: >
           terraform init
@@ -81,9 +99,6 @@ jobs:
 
       - name: Terraform Apply
         run: >
-          unset KUBE_CONFIG_FILE
-          unset KUBE_CONFIG_FILES
-          
           terraform apply
           -input=false
           tfplan
