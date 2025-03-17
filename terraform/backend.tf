@@ -43,7 +43,8 @@ provider "kubernetes" {
       "--login",
       "azurecli",
       "--server-id",
-      "6dae42f8–4368–4678–94ff-3960e28e3630"
+      "6dae42f8–4368–4678–94ff-3960e28e3630",
+      "--use-azurerm-env-vars"
     ]
   }
 }
