@@ -13,10 +13,13 @@ resource "azurerm_key_vault" "this" {
   public_network_access_enabled   = var.env.key_vault.public_network_access_enabled
 
   network_acls {
-    bypass                     = "AzureServices"
-    default_action             = "Allow"
-    ip_rules                   = []
-    virtual_network_subnet_ids = []
+    bypass         = "AzureServices"
+    default_action = "Allow"
+    ip_rules       = []
+    virtual_network_subnet_ids = [
+      azurerm_subnet.this["k8s"].id,
+      azurerm_subnet.this["app_gateway"].id
+    ]
   }
 
   tags = local.tags

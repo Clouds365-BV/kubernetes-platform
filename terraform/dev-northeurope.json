@@ -48,21 +48,10 @@
             "10.10.30.0/24"
           ]
         },
-        "k8s-blog": {
-          "address_prefixes": [
-            "10.10.31.0/24"
-          ]
-        },
         "bastion": {
           "name": "AzureBastionSubnet",
           "address_prefixes": [
             "10.10.40.0/24"
-          ]
-        },
-        "azure_firewall": {
-          "name:": "AzureFirewallSubnet",
-          "address_prefixes": [
-            "10.10.41.0/24"
           ]
         },
         "app_gateway": {

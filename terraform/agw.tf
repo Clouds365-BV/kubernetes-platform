@@ -2,14 +2,19 @@ resource "azurerm_user_assigned_identity" "agw" {
   name                = "${local.resource_name_prefix}-agw-id"
   resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
+
+  tags = local.tags
 }
 
 module "agw-roles" {
   source = "../modules/azure/authorization/role-assignment"
+  for_each = {
+    "Key Vault Secrets User" : azurerm_key_vault.this.id
+  }
 
   object_id            = azurerm_user_assigned_identity.agw.principal_id
-  role_definition_name = "Azure Key Vault Secrets User"
-  resource_id          = azurerm_key_vault.this.id
+  role_definition_name = each.key
+  resource_id          = each.value
 }
 
 resource "azurerm_application_gateway" "this" {
@@ -94,6 +99,10 @@ resource "azurerm_application_gateway" "this" {
       azurerm_user_assigned_identity.agw.id
     ]
   }
+
+  depends_on = [
+    module.agw-roles
+  ]
 
   tags = local.tags
 }
