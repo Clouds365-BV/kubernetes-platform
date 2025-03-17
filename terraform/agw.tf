@@ -93,6 +93,15 @@ resource "azurerm_application_gateway" "this" {
     priority                   = 10
   }
 
+  request_routing_rule {
+    name                       = "HttpsRoutingRule"
+    http_listener_name         = "HttpsListener"
+    backend_address_pool_name  = "AksBackendPool"
+    backend_http_settings_name = "AksBackendHttpSettings"
+    rule_type                  = "Basic"
+    priority                   = 10
+  }
+
   identity {
     type = "UserAssigned"
     identity_ids = [
