@@ -31,7 +31,7 @@ resource "azurerm_postgresql_flexible_server" "this" {
 }
 
 module "diagnostic_settings_postgres" {
-  source = "../modules/azure/monitor/diagnostic-settings"
+  source = "../../modules/azure/monitor/diagnostic-settings"
 
   name                       = "postgres-diagnostic-settings"
   target_resource_id         = azurerm_postgresql_flexible_server.this.id

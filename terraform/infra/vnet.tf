@@ -8,7 +8,7 @@ resource "azurerm_virtual_network" "this" {
 }
 
 module "diagnostic_settings_vnet" {
-  source = "../modules/azure/monitor/diagnostic-settings"
+  source = "../../modules/azure/monitor/diagnostic-settings"
 
   name                       = "vnet-diagnostic-settings"
   target_resource_id         = azurerm_virtual_network.this.id

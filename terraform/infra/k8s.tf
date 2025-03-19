@@ -7,7 +7,7 @@ resource "azurerm_user_assigned_identity" "k8s" {
 }
 
 module "k8s-roles" {
-  source = "../modules/azure/authorization/role-assignment"
+  source = "../../modules/azure/authorization/role-assignment"
 
   object_id            = azurerm_user_assigned_identity.k8s.principal_id
   role_definition_name = "Private DNS Zone Contributor"
