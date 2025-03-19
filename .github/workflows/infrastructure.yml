@@ -151,11 +151,11 @@ jobs:
           -backend-config="storage_account_name=ncterraform"
           -backend-config="container_name=state"
           -backend-config="key=drone-${{env.selected-environment}}-k8s-northeurope.tfstate"
-        working-directory: ./terraform
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 
       - name: Terraform Validate
         run: terraform validate
-        working-directory: ./terraform
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 
       - name: Terraform Plan
         run: >
@@ -165,11 +165,11 @@ jobs:
           --var="location=northeurope"
           --var-file="./${{env.selected-environment}}-northeurope.json"
           -out=tfplan
-        working-directory: ./terraform
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 
       - name: Terraform Apply
         run: >
           terraform apply
           -input=false
           tfplan
-        working-directory: ./terraform
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
