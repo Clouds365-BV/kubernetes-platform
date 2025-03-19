@@ -74,7 +74,7 @@ resource "kubernetes_deployment_v1" "blog" {
           name = "blog-content"
 
           persistent_volume_claim {
-            claim_name = "blog_claim"
+            claim_name = "blog-claim"
           }
         }
 
@@ -146,10 +146,10 @@ resource "kubernetes_service_v1" "blog" {
   }
 }
 
-resource "kubernetes_ingress_v1" "ingress_ghost" {
+resource "kubernetes_ingress_v1" "ingress_blog" {
   metadata {
-    name      = "ingress-ghost"
-    namespace = "ghost"
+    name      = "ingress-blog"
+    namespace = "blog"
     annotations = {
       "kubernetes.io/ingress.class"                   = "azure/application-gateway"
       "appgw.ingress.kubernetes.io/backend-protocol"  = "http"
@@ -166,8 +166,12 @@ resource "kubernetes_ingress_v1" "ingress_ghost" {
         path {
           path = "/"
           backend {
-            service_name = "ghost"
-            service_port = 80
+            service {
+              name = "blog"
+              port {
+                number = 80
+              }
+            }
           }
         }
       }
