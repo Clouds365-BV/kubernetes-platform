@@ -4,28 +4,24 @@ resource "kubernetes_namespace_v1" "blog" {
   }
 }
 
-# resource "kubernetes_persistent_volume_claim_v1" "blog_claim" {
-#   metadata {
-#     name      = "blog-claim"
-#     namespace = "blog"
-#   }
-#
-#   spec {
-#     access_modes       = ["ReadWriteMany"]
-#     storage_class_name = "azurefile"
-#
-#     resources {
-#       requests = {
-#         storage = "50Gi"
-#       }
-#     }
-#   }
-#
-#   depends_on = [
-#   kubernetes_storage_class_v1.azurefile
-#   ]
-# }
-#
+resource "kubernetes_persistent_volume_claim_v1" "blog_claim" {
+  metadata {
+    name      = "blog-claim"
+    namespace = "blog"
+  }
+
+  spec {
+    access_modes       = ["ReadWriteMany"]
+    storage_class_name = "azurefile-csi"
+
+    resources {
+      requests = {
+        storage = "50Gi"
+      }
+    }
+  }
+}
+
 # resource "kubernetes_deployment_v1" "blog" {
 #   metadata {
 #     name      = "blog"
