@@ -24,9 +24,3 @@ resource "azurerm_storage_account" "this" {
 
   tags = local.tags
 }
-
-resource "azurerm_storage_share" "k8s" {
-  name               = "k8s"
-  storage_account_id = azurerm_storage_account.this.id
-  quota              = 50
-}

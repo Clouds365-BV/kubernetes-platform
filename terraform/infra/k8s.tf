@@ -1,3 +1,9 @@
+resource "azurerm_storage_share" "k8s" {
+  name               = "k8s"
+  storage_account_id = azurerm_storage_account.this.id
+  quota              = 50
+}
+
 resource "azurerm_user_assigned_identity" "k8s" {
   name                = "${local.resource_name_prefix}-k8s-id"
   resource_group_name = azurerm_resource_group.this.name
