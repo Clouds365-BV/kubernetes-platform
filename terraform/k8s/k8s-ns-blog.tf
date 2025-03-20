@@ -65,6 +65,46 @@ resource "kubernetes_deployment_v1" "blog" {
             name  = "url"
             value = "http://drones-shuttles.io"
           }
+          env {
+            name  = "database__client"
+            value = "postgres"
+          }
+          env {
+            name = "database__connection__host"
+            value_from {
+              secret_key_ref {
+                name = "database-connection"
+                key  = "database__connection__host"
+              }
+            }
+          }
+          env {
+            name = "database__connection__user"
+            value_from {
+              secret_key_ref {
+                name = "database-connection"
+                key  = "database__connection__user"
+              }
+            }
+          }
+          env {
+            name = "database__connection__password"
+            value_from {
+              secret_key_ref {
+                name = "database-connection"
+                key  = "database__connection__password"
+              }
+            }
+          }
+          env {
+            name = "database__connection__database"
+            value_from {
+              secret_key_ref {
+                name = "database-connection"
+                key  = "database__connection__database"
+              }
+            }
+          }
 
           readiness_probe {
             http_get {
