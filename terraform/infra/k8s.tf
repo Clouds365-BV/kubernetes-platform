@@ -8,10 +8,16 @@ resource "azurerm_user_assigned_identity" "k8s" {
 
 module "k8s-roles" {
   source = "../../modules/azure/authorization/role-assignment"
+  for_each = {
+    "private_dns_zone|Private DNS Zone Contributor" : azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id,
+    "storage_account|Reader" : azurerm_storage_account.this.id,
+    "storage_account|Contributor" : azurerm_storage_account.this.id,
+    "storage_account|Storage File Data SMB Share Contributor" : azurerm_storage_account.this.id
+  }
 
   object_id            = azurerm_user_assigned_identity.k8s.principal_id
-  role_definition_name = "Private DNS Zone Contributor"
-  resource_id          = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
+  role_definition_name = split("|", each.key)[1]
+  resource_id          = each.value
 }
 
 resource "azurerm_kubernetes_cluster" "this" {
@@ -56,6 +62,9 @@ resource "azurerm_kubernetes_cluster" "this" {
   network_profile {
     network_plugin = "azure"
     network_policy = "azure"
+  }
+  storage_profile {
+    file_driver_enabled = true
   }
   #azure_policy_enabled = true
 
