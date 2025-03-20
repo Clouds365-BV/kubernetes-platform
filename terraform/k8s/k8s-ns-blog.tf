@@ -63,7 +63,7 @@ resource "kubernetes_deployment_v1" "blog" {
 
           env {
             name  = "url"
-            value = "drones-shuttles.io"
+            value = "http://drones-shuttles.io"
           }
 
           readiness_probe {
