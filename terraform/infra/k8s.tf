@@ -1,9 +1,3 @@
-resource "azurerm_storage_share" "k8s" {
-  name               = "k8s"
-  storage_account_id = azurerm_storage_account.this.id
-  quota              = 50
-}
-
 resource "azurerm_user_assigned_identity" "k8s" {
   name                = "${local.resource_name_prefix}-k8s-id"
   resource_group_name = azurerm_resource_group.this.name
@@ -15,10 +9,7 @@ resource "azurerm_user_assigned_identity" "k8s" {
 module "k8s-roles" {
   source = "../../modules/azure/authorization/role-assignment"
   for_each = {
-    "private_dns_zone|Private DNS Zone Contributor" : azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id,
-    "storage_account|Reader" : azurerm_storage_account.this.id,
-    "storage_account|Contributor" : azurerm_storage_account.this.id,
-    "storage_account|Storage File Data SMB Share Contributor" : azurerm_storage_account.this.id
+    "private_dns_zone|Private DNS Zone Contributor" : azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
   }
 
   object_id            = azurerm_user_assigned_identity.k8s.principal_id
