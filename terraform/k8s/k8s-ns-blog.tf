@@ -86,6 +86,10 @@ resource "kubernetes_deployment_v1" "blog" {
             value = "http://drones-shuttles.io"
           }
           env {
+            name  = "mail__from"
+            value = "no-reply@drones-shuttles.io"
+          }
+          env {
             name  = "mail__transport"
             value = "SMTP"
           }
