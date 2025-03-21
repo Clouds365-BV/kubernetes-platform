@@ -190,37 +190,38 @@ resource "kubernetes_service_v1" "blog" {
   ]
 }
 
-# resource "kubernetes_ingress_v1" "ingress_blog" {
-#   metadata {
-#     name      = "ingress-blog"
-#     namespace = "blog"
-#     annotations = {
-#       "kubernetes.io/ingress.class"                   = "azure/application-gateway"
-#       "appgw.ingress.kubernetes.io/backend-protocol"  = "http"
-#       "appgw.ingress.kubernetes.io/request-body-size" = "16m"
-#     }
-#   }
-#
-#   spec {
-#     rule {
-#       host = "drones-shuttles.io"
-#
-#       http {
-#         path {
-#           path = "/"
-#           backend {
-#             service {
-#               name = "blog"
-#               port {
-#                 number = 80
-#               }
-#             }
-#           }
-#         }
-#       }
-#     }
-#   }
-#
-#   depends_on = [
-#   kubernetes_service_v1.blog]
-# }
+resource "kubernetes_ingress_v1" "ingress_blog" {
+  metadata {
+    name      = "ingress-blog"
+    namespace = "blog"
+    annotations = {
+      "kubernetes.io/ingress.class"                   = "azure/application-gateway"
+      "appgw.ingress.kubernetes.io/backend-protocol"  = "http"
+      "appgw.ingress.kubernetes.io/request-body-size" = "16m"
+    }
+  }
+
+  spec {
+    rule {
+      host = "drones-shuttles.io"
+
+      http {
+        path {
+          path = "/"
+          backend {
+            service {
+              name = "blog"
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  depends_on = [
+    kubernetes_service_v1.blog
+  ]
+}
