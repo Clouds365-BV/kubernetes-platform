@@ -3,7 +3,7 @@ resource "kubernetes_manifest" "azure_kv" {
     apiVersion = "secrets-store.csi.x-k8s.io/v1"
     kind       = "SecretProviderClass"
     metadata = {
-      name      = "azure-kv"
+      name      = "azure-database-kv"
       namespace = "blog"
     }
     spec = {
@@ -54,6 +54,54 @@ resource "kubernetes_manifest" "azure_kv" {
             {
               objectName = "database-name"
               key        = "database__connection__database"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
+
+resource "kubernetes_manifest" "azure_kv" {
+  manifest = {
+    apiVersion = "secrets-store.csi.x-k8s.io/v1"
+    kind       = "SecretProviderClass"
+    metadata = {
+      name      = "azure-smtp-kv"
+      namespace = "blog"
+    }
+    spec = {
+      provider = "azure"
+      parameters = {
+        usePodIdentity         = "false"
+        useVMManagedIdentity   = "true"
+        userAssignedIdentityID = data.azurerm_kubernetes_cluster.this.key_vault_secrets_provider[0].secret_identity[0].client_id
+        keyvaultName           = data.azurerm_key_vault.this.name
+        objects                = <<-EOT
+          array:
+            - |
+              objectName: smtp-username
+              objectType: secret
+              objectVersion: ""
+            - |
+              objectName: smtp-password
+              objectType: secret
+              objectVersion: ""
+        EOT
+        tenantId               = data.azurerm_client_config.current.tenant_id
+      }
+      secretObjects = [
+        {
+          secretName = "smtp-connection"
+          type       = "Opaque"
+          data = [
+            {
+              objectName = "smtp-username"
+              key        = "mail__options__auth__user"
+            },
+            {
+              objectName = "smtp-password"
+              key        = "mail__options__auth__pass"
             }
           ]
         }

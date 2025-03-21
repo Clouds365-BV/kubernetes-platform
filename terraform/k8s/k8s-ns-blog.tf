@@ -56,12 +56,22 @@ resource "kubernetes_deployment_v1" "blog" {
           }
         }
         volume {
-          name = "blog-secrets"
+          name = "database-secrets"
           csi {
             driver    = "secrets-store.csi.k8s.io"
             read_only = true
             volume_attributes = {
-              secretProviderClass = "azure-kv"
+              secretProviderClass = "azure-database-kv"
+            }
+          }
+        }
+        volume {
+          name = "smtp-secrets"
+          csi {
+            driver    = "secrets-store.csi.k8s.io"
+            read_only = true
+            volume_attributes = {
+              secretProviderClass = "azure-smtp-kv"
             }
           }
         }
@@ -74,6 +84,32 @@ resource "kubernetes_deployment_v1" "blog" {
           env {
             name  = "url"
             value = "http://drones-shuttles.io"
+          }
+          env {
+            name  = "mail__transport"
+            value = "SMTP"
+          }
+          env {
+            name  = "mail__options__service"
+            value = "Mailgun"
+          }
+          env {
+            name = "mail__options__auth__user"
+            value_from {
+              secret_key_ref {
+                name = "smtp-connection"
+                key  = "mail__options__auth__user"
+              }
+            }
+          }
+          env {
+            name = "mail__options__auth__pass"
+            value_from {
+              secret_key_ref {
+                name = "smtp-connection"
+                key  = "mail__options__auth__pass"
+              }
+            }
           }
           env {
             name  = "database__client"
@@ -129,10 +165,14 @@ resource "kubernetes_deployment_v1" "blog" {
             name       = "blog-content"
             mount_path = "/var/lib/ghost/content"
           }
-
           volume_mount {
-            name       = "blog-secrets"
-            mount_path = "/mnt/secrets-store"
+            name       = "database-secrets"
+            mount_path = "/mnt/database-secrets-store"
+            read_only  = true
+          }
+          volume_mount {
+            name       = "smtp-secrets"
+            mount_path = "/mnt/smtp-secrets-store"
             read_only  = true
           }
 
