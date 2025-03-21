@@ -13,17 +13,20 @@ resource "azurerm_key_vault" "this" {
   public_network_access_enabled   = var.env.key_vault.public_network_access_enabled
 
   network_acls {
-    bypass                     = "AzureServices"
-    default_action             = "Allow"
-    ip_rules                   = []
-    virtual_network_subnet_ids = []
+    bypass         = "AzureServices"
+    default_action = "Allow"
+    ip_rules       = []
+    virtual_network_subnet_ids = [
+      azurerm_subnet.this["k8s"].id,
+      azurerm_subnet.this["app_gateway"].id
+    ]
   }
 
   tags = local.tags
 }
 
 module "kv_admin" {
-  source = "../modules/azure/authorization/role-assignment"
+  source = "../../modules/azure/authorization/role-assignment"
 
   object_id            = data.azurerm_client_config.current.object_id
   role_definition_name = "Key Vault Administrator"
@@ -54,6 +57,67 @@ resource "azurerm_key_vault_secret" "this" {
     azurerm_key_vault.this,
     module.kv_admin,
     random_password.this
+  ]
+
+  tags = local.tags
+}
+
+resource "azurerm_key_vault_certificate" "drones_shuttles" {
+  name         = "drones-shuttles"
+  key_vault_id = azurerm_key_vault.this.id
+
+  certificate_policy {
+    issuer_parameters {
+      name = "Self"
+    }
+
+    key_properties {
+      exportable = true
+      key_size   = 4096
+      key_type   = "RSA"
+      reuse_key  = true
+    }
+
+    lifetime_action {
+      action {
+        action_type = "AutoRenew"
+      }
+
+      trigger {
+        days_before_expiry = 30
+      }
+    }
+
+    secret_properties {
+      content_type = "application/x-pkcs12"
+    }
+
+    x509_certificate_properties {
+      # Server Authentication = 1.3.6.1.5.5.7.3.1
+      # Client Authentication = 1.3.6.1.5.5.7.3.2
+      extended_key_usage = ["1.3.6.1.5.5.7.3.1"]
+
+      key_usage = [
+        "cRLSign",
+        "dataEncipherment",
+        "digitalSignature",
+        "keyAgreement",
+        "keyCertSign",
+        "keyEncipherment",
+      ]
+
+      subject_alternative_names {
+        dns_names = ["*.drones-shuttles.io"]
+      }
+
+      subject            = "CN=drones-shuttles.io"
+      validity_in_months = 12
+    }
+  }
+
+  depends_on = [
+    azurerm_key_vault.this,
+    module.kv_admin
   ]
 
   tags = local.tags

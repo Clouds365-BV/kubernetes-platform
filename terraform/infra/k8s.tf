@@ -2,14 +2,19 @@ resource "azurerm_user_assigned_identity" "k8s" {
   name                = "${local.resource_name_prefix}-k8s-id"
   resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
+
+  tags = local.tags
 }
 
 module "k8s-roles" {
-  source = "../modules/azure/authorization/role-assignment"
+  source = "../../modules/azure/authorization/role-assignment"
+  for_each = {
+    "private_dns_zone|Private DNS Zone Contributor" : azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
+  }
 
   object_id            = azurerm_user_assigned_identity.k8s.principal_id
-  role_definition_name = "Private DNS Zone Contributor"
-  resource_id          = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
+  role_definition_name = split("|", each.key)[1]
+  resource_id          = each.value
 }
 
 resource "azurerm_kubernetes_cluster" "this" {
@@ -22,7 +27,10 @@ resource "azurerm_kubernetes_cluster" "this" {
   resource_group_name       = azurerm_resource_group.this.name
   dns_prefix                = "${local.resource_name_prefix}-k8s"
   workload_identity_enabled = true
-  private_cluster_enabled   = true
+  workload_autoscaler_profile {
+    keda_enabled = true
+  }
+  private_cluster_enabled = true
   #private_cluster_public_fqdn_enabled = true
   private_dns_zone_id               = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
   kubernetes_version                = "1.30"
@@ -51,6 +59,9 @@ resource "azurerm_kubernetes_cluster" "this" {
   network_profile {
     network_plugin = "azure"
     network_policy = "azure"
+  }
+  storage_profile {
+    file_driver_enabled = true
   }
   #azure_policy_enabled = true
 

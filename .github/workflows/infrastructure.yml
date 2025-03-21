@@ -13,7 +13,7 @@ on:
       - terraform/**
 
 jobs:
-  terraform:
+  infra:
     #runs-on: ubuntu-latest
     runs-on: self-hosted
     env:
@@ -21,6 +21,7 @@ jobs:
       ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
       ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
       ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
+      PROJECT_WORKING_DIR: "${{ github.workspace }}/terraform/infra"
     steps:
       - name: Select environment
         run: |
@@ -35,54 +36,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: test
-        continue-on-error: true
-        run: |
-          id
-          which az
-          which kubectl
-          which kubelogin
-          kubelogin \
-          get-token \
-          --login spn \
-          --server-id 6dae42f8–4368–4678–94ff-3960e28e3630 \
-          --use-azurerm-env-vars \
-          --v 10
-        working-directory: ./terraform
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: latest
 
-      - name: Checkov GitHub Action
-        continue-on-error: true
-        uses: bridgecrewio/checkov-action@v12
-        with:
-          output_format: cli
-          output_file_path: console
-          quiet: true
-          soft_fail: true
-          directory: terraform/
+      #- name: Checkov GitHub Action
+      #  continue-on-error: true
+      #  uses: bridgecrewio/checkov-action@v12
+      #  with:
+      #    output_format: cli
+      #    output_file_path: console
+      #    quiet: true
+      #    soft_fail: true
+      #    directory: terraform/
 
       - name: Terraform Format
         run: terraform fmt -check
-        working-directory: ./terraform
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 
       - name: Terraform Init
         run: >
           terraform init
           -input=false
-          -backend-config="subscription_id=${{secrets.AZURE_SUBSCRIPTION_ID}}"
+          -backend-config="subscription_id=$ARM_SUBSCRIPTION_ID"
           -backend-config="resource_group_name=terraform"
           -backend-config="storage_account_name=ncterraform"
           -backend-config="container_name=state"
           -backend-config="key=drone-${{env.selected-environment}}-northeurope.tfstate"
-        working-directory: ./terraform
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 
       - name: Terraform Validate
         run: terraform validate
-        working-directory: ./terraform
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 
       - name: Terraform Plan
         run: >
@@ -92,11 +78,98 @@ jobs:
           --var="location=northeurope"
           --var-file="./${{env.selected-environment}}-northeurope.json"
           -out=tfplan
-        working-directory: ./terraform
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 
       - name: Terraform Apply
         run: >
           terraform apply
           -input=false
           tfplan
-        working-directory: ./terraform
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+
+  k8s:
+    runs-on: self-hosted
+    needs:
+      - infra
+    env:
+      ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+      ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+      ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+      ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
+      PROJECT_WORKING_DIR: "${{ github.workspace }}/terraform/k8s"
+    steps:
+      - name: Select environment
+        run: |
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            echo "production"
+            echo "selected-environment=prd" >> "$GITHUB_ENV"
+          else
+            echo "development"
+            echo "selected-environment=dev" >> "$GITHUB_ENV"
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+
+      - name: kubelogin
+        env:
+          ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+          ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
+        run: |
+          az login \
+          --service-principal \
+          --username $ARM_CLIENT_ID \
+          --password $ARM_CLIENT_SECRET \
+          --tenant $ARM_TENANT_ID
+          
+          az account set \
+          --subscription $ARM_SUBSCRIPTION_ID
+          
+          az aks get-credentials \
+          --context k8s \
+          --resource-group drone-${{env.selected-environment}}-ne-rg \
+          --name drone-${{env.selected-environment}}-ne-k8s \
+          --overwrite-existing
+
+          kubelogin convert-kubeconfig -l azurecli
+
+      - name: Terraform Format
+        run: terraform fmt -check
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+
+      - name: Terraform Init
+        run: >
+          terraform init
+          -input=false
+          -backend-config="subscription_id=$ARM_SUBSCRIPTION_ID"
+          -backend-config="resource_group_name=terraform"
+          -backend-config="storage_account_name=ncterraform"
+          -backend-config="container_name=state"
+          -backend-config="key=drone-${{env.selected-environment}}-k8s-northeurope.tfstate"
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+
+      - name: Terraform Plan
+        run: >
+          terraform plan
+          -input=false
+          --var="project_name=drone"
+          --var="location=northeurope"
+          --var-file="./${{env.selected-environment}}-northeurope.json"
+          -out=tfplan
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+
+      - name: Terraform Apply
+        run: >
+          terraform apply
+          -input=false
+          tfplan
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"

@@ -22,7 +22,7 @@ Below is a high-level diagram of the solution:
 - **Azure Application Gateway (WAF enabled)**: Secure ingress with DDoS protection and SSL termination.
 - **Azure Kubernetes Service (AKS)**: Manages Ghost Blog application pods with auto-scaling capabilities.
 - **Azure Redis Cache**: Caching layer to optimize performance.
-- **Azure PostgreSQL Flexible Server**: Managed database backend for Ghost Blog.
+- **Azure MySQL Flexible Server**: Managed database backend for Ghost Blog.
 - **Azure Blob Storage**: Stores blog media files.
 - **Azure Monitor, Prometheus, Grafana**: Observability stack for logs, metrics, and alerting.
 - **Azure Key Vault**: Secure storage for sensitive credentials.
