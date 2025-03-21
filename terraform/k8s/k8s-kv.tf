@@ -10,7 +10,7 @@ resource "kubernetes_manifest" "azure_kv" {
       provider = "azure"
       parameters = {
         usePodIdentity         = "false"
-        useVMManagedIdentity   = "false"
+        useVMManagedIdentity   = "true"
         userAssignedIdentityID = data.azurerm_kubernetes_cluster.this.key_vault_secrets_provider[0].secret_identity[0].client_id
         keyvaultName           = data.azurerm_key_vault.this.name
         objects                = <<-EOT
