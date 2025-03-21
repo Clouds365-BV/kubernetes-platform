@@ -111,7 +111,7 @@ resource "kubernetes_deployment_v1" "blog" {
             value_from {
               secret_key_ref {
                 name = "database-connection"
-                key  = "atabase__connection__database"
+                key  = "database__connection__database"
               }
             }
           }

@@ -59,8 +59,8 @@ resource "azurerm_mysql_flexible_database" "this" {
   name                = each.key
   resource_group_name = azurerm_mysql_flexible_server.this.resource_group_name
   server_name         = azurerm_mysql_flexible_server.this.name
-  charset             = try(each.value.charset, "utf8")
-  collation           = try(each.value.collation, "utf8_unicode_ci")
+  charset             = try(each.value.charset, "utf8mb3")
+  collation           = try(each.value.collation, "utf8mb3_unicode_ci")
 
   # prevent the possibility of accidental data loss
   lifecycle {
