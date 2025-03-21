@@ -1,18 +1,20 @@
-resource "azurerm_postgresql_flexible_server" "this" {
+resource "azurerm_mysql_flexible_server" "this" {
   name                          = "${local.resource_name_prefix}-psql"
   location                      = azurerm_resource_group.this.location
   resource_group_name           = azurerm_resource_group.this.name
-  administrator_login           = azurerm_key_vault_secret.this[var.env.databases.postgresql.administrator_login].value
-  administrator_password        = azurerm_key_vault_secret.this[var.env.databases.postgresql.administrator_password].value
-  delegated_subnet_id           = azurerm_subnet.this[var.env.databases.postgresql.subnet].id
+  administrator_login           = azurerm_key_vault_secret.this[var.env.databases.mysql.administrator_login].value
+  administrator_password        = azurerm_key_vault_secret.this[var.env.databases.mysql.administrator_password].value
+  delegated_subnet_id           = azurerm_subnet.this[var.env.databases.mysql.subnet].id
   backup_retention_days         = 7
-  public_network_access_enabled = var.env.databases.postgresql.public_network_access_enabled
-  sku_name                      = var.env.databases.postgresql.sku_name
-  private_dns_zone_id           = azurerm_private_dns_zone.this["privatelink.postgres.database.azure.com"].id
-  storage_mb                    = var.env.databases.postgresql.storage_mb
-  storage_tier                  = var.env.databases.postgresql.storage_tier
-  version                       = var.env.databases.postgresql.version
-  geo_redundant_backup_enabled  = true
+  public_network_access_enabled = var.env.databases.mysql.public_network_access_enabled
+  sku_name                      = var.env.databases.mysql.sku_name
+  private_dns_zone_id           = azurerm_private_dns_zone.this["privatelink.mysql.database.azure.com"].id
+  storage {
+    auto_grow_enabled = true
+    size_gb           = var.env.databases.mysql.storage_gb
+  }
+  version                      = var.env.databases.mysql.version
+  geo_redundant_backup_enabled = true
 
 
   lifecycle {
@@ -30,11 +32,11 @@ resource "azurerm_postgresql_flexible_server" "this" {
   tags = local.tags
 }
 
-module "diagnostic_settings_postgres" {
+module "diagnostic_settings_mysql" {
   source = "../../modules/azure/monitor/diagnostic-settings"
 
-  name                       = "postgres-diagnostic-settings"
-  target_resource_id         = azurerm_postgresql_flexible_server.this.id
+  name                       = "mysql-diagnostic-settings"
+  target_resource_id         = azurerm_mysql_flexible_server.this.id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
   logs = [
     {
@@ -51,13 +53,14 @@ module "diagnostic_settings_postgres" {
   ]
 }
 
-resource "azurerm_postgresql_flexible_server_database" "this" {
-  for_each = var.env.databases.postgresql.databases
+resource "azurerm_mysql_flexible_database" "this" {
+  for_each = var.env.databases.mysql.databases
 
-  name      = each.key
-  server_id = azurerm_postgresql_flexible_server.this.id
-  charset   = try(each.value.charset, "utf8")
-  collation = try(each.value.collation, "en_US.utf8")
+  name                = each.key
+  resource_group_name = azurerm_mysql_flexible_server.this.resource_group_name
+  server_name         = azurerm_mysql_flexible_server.this.name
+  charset             = try(each.value.charset, "utf8")
+  collation           = try(each.value.collation, "utf8_unicode_ci")
 
   # prevent the possibility of accidental data loss
   lifecycle {

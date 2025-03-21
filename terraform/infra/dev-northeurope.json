@@ -27,13 +27,13 @@
             "10.10.10.0/24"
           ]
         },
-        "postgresql-flexible-server": {
+        "mysql-flexible-server": {
           "address_prefixes": [
             "10.10.20.0/24"
           ],
           "delegations": {
             "main": {
-              "name": "Microsoft.DBforPostgreSQL/flexibleServers",
+              "name": "Microsoft.DBforMySQL/flexibleServers",
               "actions": [
                 "Microsoft.Network/virtualNetworks/subnets/join/action"
               ]
@@ -68,7 +68,7 @@
       }
     },
     "private_dns_zone": {
-      "privatelink.postgres.database.azure.com": {
+      "privatelink.mysql.database.azure.com": {
         "virtual_networks": {
           "main": {}
         }
@@ -128,24 +128,23 @@
       "sku_name": "standard",
       "public_network_access_enabled": true,
       "secrets": {
-        "postgresql-admin-username": {
-          "value": "psqladmin"
+        "database-admin-username": {
+          "value": "mysqladmin"
         },
-        "postgresql-admin-password": {
+        "database-admin-password": {
           "length": 24
         }
       }
     },
     "databases": {
-      "postgresql": {
+      "mysql": {
         "sku_name": "B_Standard_B1ms",
-        "storage_mb": 32768,
-        "storage_tier": "P4",
-        "version": "16",
-        "subnet": "postgresql-flexible-server",
+        "storage_gb": 32,
+        "version": "8.0.21",
+        "subnet": "mysql-flexible-server",
         "public_network_access_enabled": false,
-        "administrator_login": "postgresql-admin-username",
-        "administrator_password": "postgresql-admin-password",
+        "administrator_login": "database-admin-username",
+        "administrator_password": "database-admin-password",
         "databases": {
           "drone": {}
         }
