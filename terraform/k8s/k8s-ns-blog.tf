@@ -201,7 +201,8 @@ resource "kubernetes_deployment_v1" "blog" {
 
   depends_on = [
     kubernetes_persistent_volume_claim_v1.blog_claim,
-    kubernetes_manifest.azure_kv
+    kubernetes_manifest.secrets_store_database,
+    kubernetes_manifest.secrets_store_smtp
   ]
 }
 

@@ -1,4 +1,4 @@
-resource "kubernetes_manifest" "azure_kv" {
+resource "kubernetes_manifest" "secrets_store_database" {
   manifest = {
     apiVersion = "secrets-store.csi.x-k8s.io/v1"
     kind       = "SecretProviderClass"
@@ -62,7 +62,7 @@ resource "kubernetes_manifest" "azure_kv" {
   }
 }
 
-resource "kubernetes_manifest" "azure_kv" {
+resource "kubernetes_manifest" "secrets_store_smtp" {
   manifest = {
     apiVersion = "secrets-store.csi.x-k8s.io/v1"
     kind       = "SecretProviderClass"
