@@ -190,9 +190,9 @@ resource "kubernetes_service_v1" "blog" {
   ]
 }
 
-resource "kubernetes_ingress_v1" "ingress_blog" {
+resource "kubernetes_ingress_v1" "ingress_blog_any_host" {
   metadata {
-    name      = "ingress-blog"
+    name      = "ingress-blog-any-host"
     namespace = "blog"
     annotations = {
       "kubernetes.io/ingress.class"                   = "azure/application-gateway"
@@ -203,8 +203,6 @@ resource "kubernetes_ingress_v1" "ingress_blog" {
 
   spec {
     rule {
-      host = "drones-shuttles.io"
-
       http {
         path {
           path = "/"
