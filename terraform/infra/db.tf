@@ -53,6 +53,13 @@ module "diagnostic_settings_mysql" {
   ]
 }
 
+resource "azurerm_mysql_flexible_server_configuration" "this" {
+  resource_group_name = azurerm_mysql_flexible_server.this.resource_group_name
+  server_name         = azurerm_mysql_flexible_server.this.name
+  name                = "require_secure_transport"
+  value               = "OFF"
+}
+
 resource "azurerm_mysql_flexible_database" "this" {
   for_each = var.env.databases.mysql.databases
 

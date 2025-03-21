@@ -165,30 +165,31 @@ resource "kubernetes_deployment_v1" "blog" {
   ]
 }
 
-# resource "kubernetes_service_v1" "blog" {
-#   metadata {
-#     name      = "blog"
-#     namespace = "blog"
-#   }
-#
-#   spec {
-#     type = "ClusterIP"
-#
-#     selector = {
-#       app = "blog"
-#     }
-#
-#     port {
-#       protocol    = "TCP"
-#       port        = 80
-#       target_port = 2368
-#     }
-#   }
-#
-#   depends_on = [
-#   kubernetes_deployment_v1.blog]
-# }
-#
+resource "kubernetes_service_v1" "blog" {
+  metadata {
+    name      = "blog"
+    namespace = "blog"
+  }
+
+  spec {
+    type = "ClusterIP"
+
+    selector = {
+      app = "blog"
+    }
+
+    port {
+      protocol    = "TCP"
+      port        = 80
+      target_port = 2368
+    }
+  }
+
+  depends_on = [
+    kubernetes_deployment_v1.blog
+  ]
+}
+
 # resource "kubernetes_ingress_v1" "ingress_blog" {
 #   metadata {
 #     name      = "ingress-blog"
