@@ -31,6 +31,10 @@ resource "kubernetes_manifest" "secrets_store_database" {
               objectName: database-name
               objectType: secret
               objectVersion: ""
+            - |
+              objectName: database-ca-cert
+              objectType: secret
+              objectVersion: ""
         EOT
         tenantId               = data.azurerm_client_config.current.tenant_id
       }
@@ -54,6 +58,10 @@ resource "kubernetes_manifest" "secrets_store_database" {
             {
               objectName = "database-name"
               key        = "database__connection__database"
+            },
+            {
+              objectName = "database-ca-cert"
+              key        = "database__connection__ssl__ca"
             }
           ]
         }

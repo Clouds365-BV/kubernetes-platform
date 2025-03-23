@@ -88,6 +88,7 @@ jobs:
         working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 
   k8s:
+    #runs-on: ubuntu-latest
     runs-on: self-hosted
     needs:
       - infra

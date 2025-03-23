@@ -1,5 +1,5 @@
 resource "azurerm_mysql_flexible_server" "this" {
-  name                   = "${local.resource_name_prefix}-psql"
+  name                   = "${local.resource_name_prefix}-mysql"
   location               = azurerm_resource_group.this.location
   resource_group_name    = azurerm_resource_group.this.name
   administrator_login    = azurerm_key_vault_secret.this[var.env.databases.mysql.administrator_login].value
@@ -54,10 +54,12 @@ module "diagnostic_settings_mysql" {
 }
 
 resource "azurerm_mysql_flexible_server_configuration" "this" {
+  for_each = var.env.databases.mysql.parameters
+
   resource_group_name = azurerm_mysql_flexible_server.this.resource_group_name
   server_name         = azurerm_mysql_flexible_server.this.name
-  name                = "require_secure_transport"
-  value               = "OFF"
+  name                = each.key
+  value               = each.value
 }
 
 resource "azurerm_mysql_flexible_database" "this" {

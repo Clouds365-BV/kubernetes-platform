@@ -155,6 +155,15 @@ resource "kubernetes_deployment_v1" "blog" {
               }
             }
           }
+          env {
+            name = "database__connection__ssl__ca"
+            value_from {
+              secret_key_ref {
+                name = "database-connection"
+                key  = "database__connection__ssl__ca"
+              }
+            }
+          }
 
           readiness_probe {
             http_get {

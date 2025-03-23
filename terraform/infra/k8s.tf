@@ -30,17 +30,17 @@ resource "azurerm_kubernetes_cluster" "this" {
   workload_autoscaler_profile {
     keda_enabled = true
   }
-  private_cluster_enabled = true
-  #private_cluster_public_fqdn_enabled = true
-  private_dns_zone_id               = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
-  kubernetes_version                = "1.30"
-  local_account_disabled            = true
-  role_based_access_control_enabled = true
-  oidc_issuer_enabled               = true
-  automatic_upgrade_channel         = "patch"
-  node_os_upgrade_channel           = "SecurityPatch"
-  image_cleaner_enabled             = true
-  image_cleaner_interval_hours      = 168
+  private_cluster_enabled             = true
+  private_cluster_public_fqdn_enabled = true
+  private_dns_zone_id                 = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
+  kubernetes_version                  = "1.30"
+  local_account_disabled              = true
+  role_based_access_control_enabled   = true
+  oidc_issuer_enabled                 = true
+  automatic_upgrade_channel           = "patch"
+  node_os_upgrade_channel             = "SecurityPatch"
+  image_cleaner_enabled               = true
+  image_cleaner_interval_hours        = 168
   ingress_application_gateway {
     gateway_id = azurerm_application_gateway.this.id
   }
@@ -71,7 +71,7 @@ resource "azurerm_kubernetes_cluster" "this" {
     vm_size                     = "Standard_D2s_v6"
     vnet_subnet_id              = azurerm_subnet.this["k8s"].id
     min_count                   = 1
-    max_count                   = 3
+    max_count                   = 10
     auto_scaling_enabled        = true
     orchestrator_version        = "1.30"
     max_pods                    = 50
@@ -103,28 +103,28 @@ resource "azurerm_kubernetes_cluster" "this" {
   tags = local.tags
 }
 
-resource "azurerm_kubernetes_cluster_node_pool" "blog" {
-  name                        = "blog"
-  kubernetes_cluster_id       = azurerm_kubernetes_cluster.this.id
-  vnet_subnet_id              = azurerm_subnet.this["k8s"].id
-  temporary_name_for_rotation = "blogrot"
-  vm_size                     = "Standard_D2s_v6"
-  min_count                   = 1
-  max_count                   = 5
-  auto_scaling_enabled        = true
-  orchestrator_version        = "1.30"
-  host_encryption_enabled     = true
-  fips_enabled                = false
-  node_public_ip_enabled      = false
-  upgrade_settings {
-    drain_timeout_in_minutes      = 0
-    max_surge                     = "10%"
-    node_soak_duration_in_minutes = 0
-  }
-
-  node_labels = {
-    "drones/nodepool" = "blog"
-  }
-
-  tags = local.tags
-}
+# resource "azurerm_kubernetes_cluster_node_pool" "blog" {
+#   name                        = "blog"
+#   kubernetes_cluster_id       = azurerm_kubernetes_cluster.this.id
+#   vnet_subnet_id              = azurerm_subnet.this["k8s"].id
+#   temporary_name_for_rotation = "blogrot"
+#   vm_size                     = "Standard_D2s_v6"
+#   min_count                   = 1
+#   max_count                   = 5
+#   auto_scaling_enabled        = true
+#   orchestrator_version        = "1.30"
+#   host_encryption_enabled     = true
+#   fips_enabled                = false
+#   node_public_ip_enabled      = false
+#   upgrade_settings {
+#     drain_timeout_in_minutes      = 0
+#     max_surge                     = "10%"
+#     node_soak_duration_in_minutes = 0
+#   }
+#
+#   node_labels = {
+#     "drones/nodepool" = "blog"
+#   }
+#
+#   tags = local.tags
+# }

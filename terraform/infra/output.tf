@@ -9,3 +9,11 @@ output "k8s_ingress_application_gateway_identity" {
 output "k8s_key_vault_secrets_provider_identity" {
   value = azurerm_kubernetes_cluster.this.key_vault_secrets_provider[0].secret_identity[0]
 }
+
+output "azurerm_email_communication_service_domain" {
+  value = azurerm_email_communication_service_domain.this
+}
+
+output "http_database_ca_cert" {
+  value = data.http.database_ca_cert
+}
