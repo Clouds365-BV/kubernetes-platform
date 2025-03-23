@@ -145,6 +145,10 @@
         "public_network_access_enabled": false,
         "administrator_login": "database-admin-username",
         "administrator_password": "database-admin-password",
+        "parameters": {
+          "require_secure_transport": "ON",
+          "tls_version": "TLSv1.3"
+        },
         "databases": {
           "drone": {}
         }

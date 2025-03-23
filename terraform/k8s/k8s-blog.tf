@@ -7,7 +7,7 @@ resource "kubernetes_namespace_v1" "blog" {
 resource "kubernetes_persistent_volume_claim_v1" "blog_claim" {
   metadata {
     name      = "blog-claim"
-    namespace = "blog"
+    namespace = kubernetes_namespace_v1.blog.metadata[0].name
   }
 
   spec {
@@ -25,14 +25,14 @@ resource "kubernetes_persistent_volume_claim_v1" "blog_claim" {
 resource "kubernetes_deployment_v1" "blog" {
   metadata {
     name      = "blog"
-    namespace = "blog"
+    namespace = kubernetes_namespace_v1.blog.metadata[0].name
     labels = {
       app = "blog"
     }
   }
 
   spec {
-    replicas = 3
+    replicas = 1
 
     selector {
       match_labels = {
@@ -52,7 +52,7 @@ resource "kubernetes_deployment_v1" "blog" {
           name = "blog-content"
 
           persistent_volume_claim {
-            claim_name = "blog-claim"
+            claim_name = kubernetes_persistent_volume_claim_v1.blog_claim.metadata[0].name
           }
         }
         volume {
@@ -61,7 +61,7 @@ resource "kubernetes_deployment_v1" "blog" {
             driver    = "secrets-store.csi.k8s.io"
             read_only = true
             volume_attributes = {
-              secretProviderClass = "azure-database-kv"
+              secretProviderClass = kubernetes_manifest.secrets_store_database.manifest.metadata.name
             }
           }
         }
@@ -71,7 +71,7 @@ resource "kubernetes_deployment_v1" "blog" {
             driver    = "secrets-store.csi.k8s.io"
             read_only = true
             volume_attributes = {
-              secretProviderClass = "azure-smtp-kv"
+              secretProviderClass = kubernetes_manifest.secrets_store_smtp.manifest.metadata.name
             }
           }
         }
@@ -83,11 +83,11 @@ resource "kubernetes_deployment_v1" "blog" {
 
           env {
             name  = "url"
-            value = "http://drones-shuttles.io"
+            value = "http://drones-shuttles.org"
           }
           env {
             name  = "mail__from"
-            value = "no-reply@drones-shuttles.io"
+            value = "no-reply@mg.drones-shuttles.org"
           }
           env {
             name  = "mail__transport"
@@ -155,6 +155,15 @@ resource "kubernetes_deployment_v1" "blog" {
               }
             }
           }
+          env {
+            name = "database__connection__ssl__ca"
+            value_from {
+              secret_key_ref {
+                name = "database-connection"
+                key  = "database__connection__ssl__ca"
+              }
+            }
+          }
 
           readiness_probe {
             http_get {
@@ -202,69 +211,65 @@ resource "kubernetes_deployment_v1" "blog" {
       }
     }
   }
-
-  depends_on = [
-    kubernetes_persistent_volume_claim_v1.blog_claim,
-    kubernetes_manifest.secrets_store_database,
-    kubernetes_manifest.secrets_store_smtp
-  ]
 }
 
-resource "kubernetes_service_v1" "blog" {
+resource "kubernetes_horizontal_pod_autoscaler_v2" "blog" {
   metadata {
-    name      = "blog"
-    namespace = "blog"
+    name      = "blog-hpa"
+    namespace = kubernetes_namespace_v1.blog.metadata[0].name
   }
 
   spec {
-    type = "ClusterIP"
-
-    selector = {
-      app = "blog"
+    scale_target_ref {
+      api_version = "apps/v1"
+      kind        = "Deployment"
+      name        = kubernetes_deployment_v1.blog.metadata[0].name
     }
 
-    port {
-      protocol    = "TCP"
-      port        = 80
-      target_port = 2368
+    min_replicas = 1
+    max_replicas = 3
+
+    metric {
+      type = "Resource"
+      resource {
+        name = "cpu"
+        target {
+          type                = "Utilization"
+          average_utilization = 60
+        }
+      }
     }
-  }
 
-  depends_on = [
-    kubernetes_deployment_v1.blog
-  ]
-}
-
-resource "kubernetes_ingress_v1" "ingress_blog_any_host" {
-  metadata {
-    name      = "ingress-blog-any-host"
-    namespace = "blog"
-    annotations = {
-      "kubernetes.io/ingress.class"                   = "azure/application-gateway"
-      "appgw.ingress.kubernetes.io/backend-protocol"  = "http"
-      "appgw.ingress.kubernetes.io/request-body-size" = "16m"
+    metric {
+      type = "Resource"
+      resource {
+        name = "memory"
+        target {
+          type                = "Utilization"
+          average_utilization = 80
+        }
+      }
     }
-  }
 
-  spec {
-    rule {
-      http {
-        path {
-          path = "/"
-          backend {
-            service {
-              name = "blog"
-              port {
-                number = 80
-              }
-            }
-          }
+    behavior {
+      scale_down {
+        stabilization_window_seconds = 300
+        select_policy                = "Min"
+        policy {
+          type           = "Percent"
+          value          = 100
+          period_seconds = 15
+        }
+      }
+      scale_up {
+        stabilization_window_seconds = 0
+        select_policy                = "Max"
+        policy {
+          type           = "Percent"
+          value          = 100
+          period_seconds = 15
         }
       }
     }
   }
-
-  depends_on = [
-    kubernetes_service_v1.blog
-  ]
 }

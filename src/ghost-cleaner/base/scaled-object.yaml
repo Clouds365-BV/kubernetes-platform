@@ -1,0 +1,20 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: ghost-cleaner-scaler
+  namespace: admin
+spec:
+  scaleTargetRef:
+    name: ghost-cleaner
+    kind: Deployment
+  minReplicaCount: 0
+  maxReplicaCount: 3
+  pollingInterval: 15
+  cooldownPeriod: 300
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://prometheus-operated.monitoring.svc.cluster.local:9090
+        metricName: http_requests_total
+        query: sum(rate(http_requests_total{service="ghost-cleaner"}[2m]))
+        threshold: '1'
