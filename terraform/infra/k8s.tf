@@ -71,7 +71,7 @@ resource "azurerm_kubernetes_cluster" "this" {
     vm_size                     = "Standard_D2s_v6"
     vnet_subnet_id              = azurerm_subnet.this["k8s"].id
     min_count                   = 1
-    max_count                   = 10
+    max_count                   = 3
     auto_scaling_enabled        = true
     orchestrator_version        = "1.30"
     max_pods                    = 50
