@@ -7,7 +7,7 @@ resource "kubernetes_namespace_v1" "blog" {
 resource "kubernetes_persistent_volume_claim_v1" "blog_claim" {
   metadata {
     name      = "blog-claim"
-    namespace = "blog"
+    namespace = kubernetes_namespace_v1.blog.metadata.name
   }
 
   spec {
@@ -25,7 +25,7 @@ resource "kubernetes_persistent_volume_claim_v1" "blog_claim" {
 resource "kubernetes_deployment_v1" "blog" {
   metadata {
     name      = "blog"
-    namespace = "blog"
+    namespace = kubernetes_namespace_v1.blog.metadata.name
     labels = {
       app = "blog"
     }
@@ -52,7 +52,7 @@ resource "kubernetes_deployment_v1" "blog" {
           name = "blog-content"
 
           persistent_volume_claim {
-            claim_name = "blog-claim"
+            claim_name = kubernetes_persistent_volume_claim_v1.blog_claim.metadata.name
           }
         }
         volume {
@@ -61,7 +61,7 @@ resource "kubernetes_deployment_v1" "blog" {
             driver    = "secrets-store.csi.k8s.io"
             read_only = true
             volume_attributes = {
-              secretProviderClass = "azure-database-kv"
+              secretProviderClass = kubernetes_manifest.secrets_store_database.manifest.metadata.name
             }
           }
         }
@@ -71,7 +71,7 @@ resource "kubernetes_deployment_v1" "blog" {
             driver    = "secrets-store.csi.k8s.io"
             read_only = true
             volume_attributes = {
-              secretProviderClass = "azure-smtp-kv"
+              secretProviderClass = kubernetes_manifest.secrets_store_smtp.manifest.metadata.name
             }
           }
         }
@@ -211,18 +211,12 @@ resource "kubernetes_deployment_v1" "blog" {
       }
     }
   }
-
-  depends_on = [
-    kubernetes_persistent_volume_claim_v1.blog_claim,
-    kubernetes_manifest.secrets_store_database,
-    kubernetes_manifest.secrets_store_smtp
-  ]
 }
 
 resource "kubernetes_horizontal_pod_autoscaler_v2" "blog" {
   metadata {
     name      = "blog-hpa"
-    namespace = "blog"
+    namespace = kubernetes_namespace_v1.blog.metadata.name
   }
 
   spec {
@@ -260,6 +254,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "blog" {
     behavior {
       scale_down {
         stabilization_window_seconds = 300
+        select_policy                = "Min"
         policy {
           type           = "Percent"
           value          = 100
@@ -268,6 +263,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "blog" {
       }
       scale_up {
         stabilization_window_seconds = 0
+        select_policy                = "Max"
         policy {
           type           = "Percent"
           value          = 100
@@ -276,67 +272,4 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "blog" {
       }
     }
   }
-
-  depends_on = [
-    kubernetes_deployment_v1.blog
-  ]
-}
-
-resource "kubernetes_service_v1" "blog" {
-  metadata {
-    name      = "blog"
-    namespace = "blog"
-  }
-
-  spec {
-    type = "ClusterIP"
-
-    selector = {
-      app = "blog"
-    }
-
-    port {
-      protocol    = "TCP"
-      port        = 80
-      target_port = 2368
-    }
-  }
-
-  depends_on = [
-    kubernetes_deployment_v1.blog
-  ]
-}
-
-resource "kubernetes_ingress_v1" "ingress_blog_any_host" {
-  metadata {
-    name      = "ingress-blog-any-host"
-    namespace = "blog"
-    annotations = {
-      "kubernetes.io/ingress.class"                   = "azure/application-gateway"
-      "appgw.ingress.kubernetes.io/backend-protocol"  = "http"
-      "appgw.ingress.kubernetes.io/request-body-size" = "16m"
-    }
-  }
-
-  spec {
-    rule {
-      http {
-        path {
-          path = "/"
-          backend {
-            service {
-              name = "blog"
-              port {
-                number = 80
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  depends_on = [
-    kubernetes_service_v1.blog
-  ]
 }
