@@ -19,8 +19,8 @@ module "agw-roles" {
 
 resource "azurerm_application_gateway" "this" {
   name                = "${local.resource_name_prefix}-agw"
-  location            = azurerm_resource_group.this.location
   resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
 
   sku {
     name     = "Standard_v2"

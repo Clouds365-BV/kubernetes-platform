@@ -1,7 +1,7 @@
 resource "azurerm_mysql_flexible_server" "this" {
   name                   = "${local.resource_name_prefix}-mysql"
-  location               = azurerm_resource_group.this.location
   resource_group_name    = azurerm_resource_group.this.name
+  location               = azurerm_resource_group.this.location
   administrator_login    = azurerm_key_vault_secret.this[var.env.databases.mysql.administrator_login].value
   administrator_password = azurerm_key_vault_secret.this[var.env.databases.mysql.administrator_password].value
   delegated_subnet_id    = azurerm_subnet.this[var.env.databases.mysql.subnet].id

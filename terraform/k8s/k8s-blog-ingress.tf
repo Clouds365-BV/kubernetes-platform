@@ -3,9 +3,8 @@ resource "kubernetes_ingress_v1" "ingress_blog_any_host" {
     name      = "ingress-blog-any-host"
     namespace = kubernetes_namespace_v1.blog.metadata[0].name
     annotations = {
-      "kubernetes.io/ingress.class"                   = "azure/application-gateway"
-      "appgw.ingress.kubernetes.io/backend-protocol"  = "http"
-      "appgw.ingress.kubernetes.io/request-body-size" = "16m"
+      "kubernetes.io/ingress.class"                  = "azure/application-gateway"
+      "appgw.ingress.kubernetes.io/backend-protocol" = "http"
     }
   }
 

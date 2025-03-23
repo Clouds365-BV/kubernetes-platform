@@ -1,3 +1,5 @@
+name: Deploy infra and configure k8s
+
 on:
   push:
     branches:
@@ -13,9 +15,68 @@ on:
       - terraform/**
 
 jobs:
+  validate-infra:
+    runs-on: ubuntu-latest
+    env:
+      ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+      ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+      PROJECT_WORKING_DIR: "${{ github.workspace }}/terraform/infra"
+    steps:
+      - name: Select environment
+        run: |
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            echo "production"
+            echo "selected-environment=prd" >> "$GITHUB_ENV"
+          else
+            echo "development"
+            echo "selected-environment=dev" >> "$GITHUB_ENV"
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+
+      - name: Checkov GitHub Action
+        continue-on-error: true
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          output_format: cli
+          output_file_path: console
+          quiet: true
+          soft_fail: true
+          directory: "${{ env.PROJECT_WORKING_DIR }}"
+
+      - name: Terraform Format
+        run: terraform fmt -check
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+
+      - name: Terraform Init
+        env:
+          ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+          ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
+        run: >
+          terraform init
+          -input=false
+          -backend-config="subscription_id=$ARM_SUBSCRIPTION_ID"
+          -backend-config="resource_group_name=terraform"
+          -backend-config="storage_account_name=ncterraform"
+          -backend-config="container_name=state"
+          -backend-config="key=drone-${{env.selected-environment}}-northeurope.tfstate"
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+
   infra:
     #runs-on: ubuntu-latest
     runs-on: self-hosted
+    needs:
+      - validate-infra
     env:
       ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
       ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
@@ -41,20 +102,6 @@ jobs:
         with:
           terraform_version: latest
 
-      #- name: Checkov GitHub Action
-      #  continue-on-error: true
-      #  uses: bridgecrewio/checkov-action@v12
-      #  with:
-      #    output_format: cli
-      #    output_file_path: console
-      #    quiet: true
-      #    soft_fail: true
-      #    directory: terraform/
-
-      - name: Terraform Format
-        run: terraform fmt -check
-        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
-
       - name: Terraform Init
         run: >
           terraform init
@@ -64,10 +111,6 @@ jobs:
           -backend-config="storage_account_name=ncterraform"
           -backend-config="container_name=state"
           -backend-config="key=drone-${{env.selected-environment}}-northeurope.tfstate"
-        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
-
-      - name: Terraform Validate
-        run: terraform validate
         working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 
       - name: Terraform Plan
@@ -87,10 +130,68 @@ jobs:
           tfplan
         working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 
+  validate-k8s:
+    runs-on: ubuntu-latest
+    env:
+      ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+      ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+      PROJECT_WORKING_DIR: "${{ github.workspace }}/terraform/k8s"
+    steps:
+      - name: Select environment
+        run: |
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            echo "production"
+            echo "selected-environment=prd" >> "$GITHUB_ENV"
+          else
+            echo "development"
+            echo "selected-environment=dev" >> "$GITHUB_ENV"
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+
+      - name: Checkov GitHub Action
+        continue-on-error: true
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          output_format: cli
+          output_file_path: console
+          quiet: true
+          soft_fail: true
+          directory: "${{ env.PROJECT_WORKING_DIR }}"
+
+      - name: Terraform Format
+        run: terraform fmt -check
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+
+      - name: Terraform Init
+        env:
+          ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+          ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
+        run: >
+          terraform init
+          -input=false
+          -backend-config="subscription_id=$ARM_SUBSCRIPTION_ID"
+          -backend-config="resource_group_name=terraform"
+          -backend-config="storage_account_name=ncterraform"
+          -backend-config="container_name=state"
+          -backend-config="key=drone-${{env.selected-environment}}-k8s-northeurope.tfstate"
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+
   k8s:
     #runs-on: ubuntu-latest
     runs-on: self-hosted
     needs:
+      - validate-k8s
       - infra
     env:
       ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
