@@ -74,7 +74,7 @@ jobs:
       - name: Build and Push Image
         uses: docker/build-push-action@v5
         with:
-          context: ./ghost-cleaner
+          context: "${{ env.PROJECT_DIR }}/ghost-cleaner"
           push: true
           tags: "${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }},${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest"
 
@@ -83,10 +83,10 @@ jobs:
 
       - name: Update kustomization.yaml
         run: |
-          cd "${{ github.workspace }}/ghost-cleaner/base"
+          cd "${{ env.PROJECT_DIR }}/base"
           kustomize edit set image ghost-cleaner=${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
       - name: Deploy to Kubernetes
         run: |
-          kubectl create namespace blog --dry-run=client -o yaml | kubectl apply -f -
-          kubectl apply -k ghost-cleaner/base
+          #kubectl create namespace blog --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -k ${{ env.PROJECT_DIR }}/base
