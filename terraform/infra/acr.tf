@@ -4,7 +4,7 @@ resource "azurerm_container_registry" "this" {
   location                      = azurerm_resource_group.this.location
   sku                           = "Standard"
   admin_enabled                 = true
-  public_network_access_enabled = true
+  public_network_access_enabled = false
   anonymous_pull_enabled        = false
 
   tags = local.tags
