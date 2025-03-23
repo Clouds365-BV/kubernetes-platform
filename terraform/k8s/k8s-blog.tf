@@ -227,7 +227,7 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "blog" {
     }
 
     min_replicas = 1
-    max_replicas = 10
+    max_replicas = 3
 
     metric {
       type = "Resource"

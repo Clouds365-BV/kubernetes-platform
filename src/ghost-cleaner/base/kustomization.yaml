@@ -3,8 +3,8 @@ kind: Kustomization
 
 resources:
   - deployment.yaml
-  - ingress.yml
+  - ingress.yaml
   - secret.yaml
-  - service.yml
+  - service.yaml
 
 namespace: blog
