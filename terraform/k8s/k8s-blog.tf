@@ -61,7 +61,7 @@ resource "kubernetes_deployment_v1" "blog" {
             driver    = "secrets-store.csi.k8s.io"
             read_only = true
             volume_attributes = {
-              secretProviderClass = kubernetes_manifest.secrets_store_database.manifest.metadata[0].name
+              secretProviderClass = kubernetes_manifest.secrets_store_database.manifest.metadata.name
             }
           }
         }
@@ -71,7 +71,7 @@ resource "kubernetes_deployment_v1" "blog" {
             driver    = "secrets-store.csi.k8s.io"
             read_only = true
             volume_attributes = {
-              secretProviderClass = kubernetes_manifest.secrets_store_smtp.manifest.metadata[0].name
+              secretProviderClass = kubernetes_manifest.secrets_store_smtp.manifest.metadata.name
             }
           }
         }
