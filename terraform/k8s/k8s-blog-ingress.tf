@@ -1,7 +1,7 @@
 resource "kubernetes_ingress_v1" "ingress_blog_any_host" {
   metadata {
     name      = "ingress-blog-any-host"
-    namespace = kubernetes_namespace_v1.blog.metadata.name
+    namespace = kubernetes_namespace_v1.blog.metadata[0].name
     annotations = {
       "kubernetes.io/ingress.class"                   = "azure/application-gateway"
       "appgw.ingress.kubernetes.io/backend-protocol"  = "http"

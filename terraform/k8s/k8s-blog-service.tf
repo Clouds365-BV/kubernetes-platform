@@ -1,7 +1,7 @@
 resource "kubernetes_service_v1" "blog" {
   metadata {
     name      = "blog"
-    namespace = kubernetes_namespace_v1.blog.metadata.name
+    namespace = kubernetes_namespace_v1.blog.metadata[0].name
   }
 
   spec {

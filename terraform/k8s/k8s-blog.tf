@@ -7,7 +7,7 @@ resource "kubernetes_namespace_v1" "blog" {
 resource "kubernetes_persistent_volume_claim_v1" "blog_claim" {
   metadata {
     name      = "blog-claim"
-    namespace = kubernetes_namespace_v1.blog.metadata.name
+    namespace = kubernetes_namespace_v1.blog.metadata[0].name
   }
 
   spec {
@@ -25,7 +25,7 @@ resource "kubernetes_persistent_volume_claim_v1" "blog_claim" {
 resource "kubernetes_deployment_v1" "blog" {
   metadata {
     name      = "blog"
-    namespace = kubernetes_namespace_v1.blog.metadata.name
+    namespace = kubernetes_namespace_v1.blog.metadata[0].name
     labels = {
       app = "blog"
     }
@@ -52,7 +52,7 @@ resource "kubernetes_deployment_v1" "blog" {
           name = "blog-content"
 
           persistent_volume_claim {
-            claim_name = kubernetes_persistent_volume_claim_v1.blog_claim.metadata.name
+            claim_name = kubernetes_persistent_volume_claim_v1.blog_claim.metadata[0].name
           }
         }
         volume {
@@ -61,7 +61,7 @@ resource "kubernetes_deployment_v1" "blog" {
             driver    = "secrets-store.csi.k8s.io"
             read_only = true
             volume_attributes = {
-              secretProviderClass = kubernetes_manifest.secrets_store_database.manifest.metadata.name
+              secretProviderClass = kubernetes_manifest.secrets_store_database.manifest.metadata[0].name
             }
           }
         }
@@ -71,7 +71,7 @@ resource "kubernetes_deployment_v1" "blog" {
             driver    = "secrets-store.csi.k8s.io"
             read_only = true
             volume_attributes = {
-              secretProviderClass = kubernetes_manifest.secrets_store_smtp.manifest.metadata.name
+              secretProviderClass = kubernetes_manifest.secrets_store_smtp.manifest.metadata[0].name
             }
           }
         }
@@ -216,7 +216,7 @@ resource "kubernetes_deployment_v1" "blog" {
 resource "kubernetes_horizontal_pod_autoscaler_v2" "blog" {
   metadata {
     name      = "blog-hpa"
-    namespace = kubernetes_namespace_v1.blog.metadata.name
+    namespace = kubernetes_namespace_v1.blog.metadata[0].name
   }
 
   spec {
