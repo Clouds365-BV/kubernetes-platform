@@ -4,7 +4,7 @@ resource "azurerm_container_registry" "this" {
   location                      = azurerm_resource_group.this.location
   sku                           = "Standard"
   admin_enabled                 = true
-  public_network_access_enabled = false
+  public_network_access_enabled = true # false # Only premium
   anonymous_pull_enabled        = false
 
   tags = local.tags
@@ -22,7 +22,7 @@ module "diagnostic_settings_acr" {
   source = "../../modules/azure/monitor/diagnostic-settings"
 
   name                       = "acr-diagnostic-settings"
-  target_resource_id         = azurerm_mysql_flexible_server.this.id
+  target_resource_id         = azurerm_container_registry.this.id
   log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
   logs = [
     {
