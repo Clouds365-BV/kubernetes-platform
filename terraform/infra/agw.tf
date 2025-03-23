@@ -94,6 +94,7 @@ resource "azurerm_application_gateway" "this" {
       http_listener,
       probe,
       request_routing_rule,
+      url_path_map,
       tags["ingress-for-aks-cluster-id"],
       tags["managed-by-k8s-ingress"],
     ]
