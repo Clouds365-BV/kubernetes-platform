@@ -32,7 +32,7 @@ resource "kubernetes_deployment_v1" "blog" {
   }
 
   spec {
-    replicas = 3
+    replicas = 1
 
     selector {
       match_labels = {
@@ -216,6 +216,69 @@ resource "kubernetes_deployment_v1" "blog" {
     kubernetes_persistent_volume_claim_v1.blog_claim,
     kubernetes_manifest.secrets_store_database,
     kubernetes_manifest.secrets_store_smtp
+  ]
+}
+
+resource "kubernetes_horizontal_pod_autoscaler_v2" "blog" {
+  metadata {
+    name      = "blog-hpa"
+    namespace = "blog"
+  }
+
+  spec {
+    scale_target_ref {
+      api_version = "apps/v1"
+      kind        = "Deployment"
+      name        = kubernetes_deployment_v1.blog.metadata[0].name
+    }
+
+    min_replicas = 1
+    max_replicas = 10
+
+    metric {
+      type = "Resource"
+      resource {
+        name = "cpu"
+        target {
+          type                = "Utilization"
+          average_utilization = 60
+        }
+      }
+    }
+
+    metric {
+      type = "Resource"
+      resource {
+        name = "memory"
+        target {
+          type                = "Utilization"
+          average_utilization = 80
+        }
+      }
+    }
+
+    behavior {
+      scale_down {
+        stabilization_window_seconds = 300
+        policy {
+          type           = "Percent"
+          value          = 100
+          period_seconds = 15
+        }
+      }
+      scale_up {
+        stabilization_window_seconds = 0
+        policy {
+          type           = "Percent"
+          value          = 100
+          period_seconds = 15
+        }
+      }
+    }
+  }
+
+  depends_on = [
+    kubernetes_deployment_v1.blog
   ]
 }
 

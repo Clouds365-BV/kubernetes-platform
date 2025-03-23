@@ -13,7 +13,3 @@ output "k8s_key_vault_secrets_provider_identity" {
 output "azurerm_email_communication_service_domain" {
   value = azurerm_email_communication_service_domain.this
 }
-
-output "http_database_ca_cert" {
-  value = data.http.database_ca_cert
-}

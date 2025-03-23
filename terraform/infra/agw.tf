@@ -23,8 +23,8 @@ resource "azurerm_application_gateway" "this" {
   resource_group_name = azurerm_resource_group.this.name
 
   sku {
-    name     = "Basic" #"Standard_v2"
-    tier     = "Basic" #"Standard_v2"
+    name     = "Standard_v2"
+    tier     = "Standard_v2"
     capacity = 1
   }
 
