@@ -67,7 +67,7 @@ jobs:
 
       - name: ACR Login
         run: |
-          ACR_NAME="drone-${{env.selected-environment}}-ne-acr"
+          ACR_NAME="drone${{env.selected-environment}}neacr"
           echo "ACR_NAME=$ACR_NAME" >> $GITHUB_ENV
           az acr login --name $ACR_NAME
 
