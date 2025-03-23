@@ -6,13 +6,13 @@ on:
       - main
     paths:
       - .github/workflows/ghost-cleaner.yml
-      - src/ghost-cleaner/*
+      - src/ghost-cleaner/**
   pull_request:
     branches:
       - main
     changes:
       - .github/workflows/ghost-cleaner.yml
-      - src/ghost-cleaner/*
+      - src/ghost-cleaner/**
 
 jobs:
   build-and-deploy:
@@ -20,7 +20,7 @@ jobs:
     env:
       ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
       ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-      PROJECT_DIR: "${{ github.workspace }}/ghost-cleaner"
+      PROJECT_DIR: "${{ github.workspace }}/src/ghost-cleaner"
       IMAGE_NAME: ghost-cleaner
 
     steps:
@@ -74,7 +74,7 @@ jobs:
       - name: Build and Push Image
         uses: docker/build-push-action@v5
         with:
-          context: "${{ env.PROJECT_DIR }}/ghost-cleaner"
+          context: "${{ env.PROJECT_DIR }}"
           push: true
           tags: "${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }},${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest"
 
