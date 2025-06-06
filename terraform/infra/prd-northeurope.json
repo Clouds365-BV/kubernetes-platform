@@ -1,9 +1,0 @@
-{
-  "env": {
-    "name": "production",
-    "name_short": "prd",
-    "tags": {
-      "Environment": "production"
-    }
-  }
-}

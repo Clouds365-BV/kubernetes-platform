@@ -30,9 +30,9 @@ resource "azurerm_kubernetes_cluster" "this" {
   workload_autoscaler_profile {
     keda_enabled = true
   }
-  private_cluster_enabled             = true
-  private_cluster_public_fqdn_enabled = true
-  private_dns_zone_id                 = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
+  #private_cluster_enabled             = true
+  #private_cluster_public_fqdn_enabled = true
+  #private_dns_zone_id                 = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
   kubernetes_version                  = "1.30"
   local_account_disabled              = true
   role_based_access_control_enabled   = true
