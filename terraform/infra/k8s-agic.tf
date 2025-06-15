@@ -1,5 +1,6 @@
 module "k8s-agic-roles" {
   source = "../../modules/azure/authorization/role-assignment"
+  # roles below separated, because it can be multiple resources with same role name
   for_each = {
     "subnet|Network Contributor" : azurerm_subnet.this["app_gateway"].id,
     "resource_group|Reader" : azurerm_resource_group.this.id,
