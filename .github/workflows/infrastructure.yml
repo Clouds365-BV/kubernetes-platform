@@ -29,7 +29,7 @@ jobs:
     name: Validate Infrastructure
     uses: ./.github/workflows/terraform-validate.yml
     with:
-      working_directory: ${{ github.workspace }}/terraform/infra
+      working_directory: "${{ github.workspace }}/terraform/infra"
       backend_key_suffix: -northeurope
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -41,7 +41,7 @@ jobs:
     name: Validate Kubernetes
     uses: ./.github/workflows/terraform-validate.yml
     with:
-      working_directory: ${{ github.workspace }}/terraform/k8s
+      working_directory: "${{ github.workspace }}/terraform/k8s"
       backend_key_suffix: -k8s-northeurope
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}

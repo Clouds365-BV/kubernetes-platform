@@ -88,9 +88,7 @@ resource "azurerm_frontdoor" "this" {
     session_affinity_enabled     = true
     session_affinity_ttl_seconds = 300
 
-    web_application_firewall_policy_link {
-      id = azurerm_frontdoor_firewall_policy.waf_policy.id
-    }
+    web_application_firewall_policy_link_id = azurerm_frontdoor_firewall_policy.waf_policy.id
   }
 
   tags = local.tags

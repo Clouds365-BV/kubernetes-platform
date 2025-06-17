@@ -208,8 +208,8 @@ module "diagnostic_settings_aks" {
   source = "../../modules/azure/monitor/diagnostic-settings"
 
   name                       = "aks-diagnostic-settings"
-  target_resource_id         = azurerm_kubernetes_cluster.this.id
-  log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
+  target_resource_id         = azurerm_kubernetes_cluster.this["primary"].id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.this["primary"].id
   logs                       = local.diagnostic_settings.logs
   metrics                    = local.diagnostic_settings.metrics
 }

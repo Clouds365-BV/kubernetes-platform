@@ -28,7 +28,6 @@ jobs:
     env:
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      PROJECT_WORKING_DIR: ${{ inputs.working_directory }}
     steps:
       - name: Select environment
         run: |
@@ -56,11 +55,11 @@ jobs:
           output_file_path: console
           quiet: true
           soft_fail: true
-          directory: "${{ env.PROJECT_WORKING_DIR }}"
+          directory: ${{ inputs.working_directory }}
 
       - name: Terraform Format
         run: terraform fmt -check
-        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+        working-directory: ${{ inputs.working_directory }}
 
       - name: Terraform Init
         env:
@@ -74,8 +73,8 @@ jobs:
           -backend-config="storage_account_name=ncterraform"
           -backend-config="container_name=state"
           -backend-config="key=drone-${{env.selected-environment}}${{ inputs.backend_key_suffix }}.tfstate"
-        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+        working-directory: ${{ inputs.working_directory }}
 
       - name: Terraform Validate
         run: terraform validate
-        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+        working-directory: ${{ inputs.working_directory }}

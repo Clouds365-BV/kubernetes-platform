@@ -1,7 +1,7 @@
 resource "azurerm_mysql_flexible_server" "this" {
   name                   = "${local.resource_name_prefix}-mysql"
-  resource_group_name    = azurerm_resource_group.this.name
-  location               = azurerm_resource_group.this.location
+  resource_group_name    = azurerm_resource_group.this["primary"].name
+  location               = azurerm_resource_group.this["primary"].location
   administrator_login    = azurerm_key_vault_secret.this[var.env.databases.mysql.administrator_login].value
   administrator_password = azurerm_key_vault_secret.this[var.env.databases.mysql.administrator_password].value
   delegated_subnet_id    = azurerm_subnet.this[var.env.databases.mysql.subnet].id
@@ -37,7 +37,7 @@ module "diagnostic_settings_mysql" {
 
   name                       = "mysql-diagnostic-settings"
   target_resource_id         = azurerm_mysql_flexible_server.this.id
-  log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.this["primary"].id
   logs = [
     {
       category_group = "allLogs"
@@ -77,68 +77,51 @@ resource "azurerm_mysql_flexible_database" "this" {
   }
 }
 
-resource "azurerm_mysql_server" "this" {
-  for_each = var.regions
+# Regional MySQL instances for geo-redundancy
+resource "azurerm_mysql_flexible_server" "regional" {
+  for_each = { for k, v in var.regions : k => v if k != "primary" }
 
-  name                = "${local.resource_name_prefix}-${each.key}-mysql"
-  location            = azurerm_resource_group.this[each.key].location
-  resource_group_name = azurerm_resource_group.this[each.key].name
+  name                   = "${local.resource_name_prefix}-${each.key}-mysql"
+  location               = azurerm_resource_group.this[each.key].location
+  resource_group_name    = azurerm_resource_group.this[each.key].name
+  administrator_login    = "mysqladmin"
+  administrator_password = azurerm_key_vault_secret.mysql_password.value
+  sku_name               = "GP_Standard_D2ds_v4"
+  backup_retention_days  = 7
+  version                = "5.7"
 
-  administrator_login          = "mysqladmin"
-  administrator_login_password = azurerm_key_vault_secret.mysql_password.value
-
-  sku_name   = "GP_Gen5_2"
-  storage_mb = 51200
-  version    = "5.7"
-
-  auto_grow_enabled                 = true
-  backup_retention_days             = 7
-  geo_redundant_backup_enabled      = true
-  infrastructure_encryption_enabled = true
-  public_network_access_enabled     = false
-  ssl_enforcement_enabled           = true
-  ssl_minimal_tls_version_enforced  = "TLS1_2"
-
-  threat_detection_policy {
-    enabled                    = true
-    disabled_alerts            = []
-    email_account_admins       = true
-    email_addresses            = ["security@drones-shuttles.org"]
-    retention_days             = 7
-    storage_account_access_key = azurerm_storage_account.security[each.key].primary_access_key
-    storage_endpoint           = azurerm_storage_account.security[each.key].primary_blob_endpoint
+  storage {
+    auto_grow_enabled = true
+    size_gb           = 50
   }
+
+  high_availability {
+    mode = "ZoneRedundant"
+  }
+
+  geo_redundant_backup_enabled = true
 
   tags = local.tags
 }
 
-resource "azurerm_mysql_database" "ghost" {
-  for_each = var.regions
+resource "azurerm_mysql_flexible_database" "ghost" {
+  for_each = { for k, v in var.regions : k => v if k != "primary" }
 
   name                = "ghost"
   resource_group_name = azurerm_resource_group.this[each.key].name
-  server_name         = azurerm_mysql_server.this[each.key].name
+  server_name         = azurerm_mysql_flexible_server.regional[each.key].name
   charset             = "utf8"
   collation           = "utf8_general_ci"
 }
 
-# Geo-replication for disaster recovery
-resource "azurerm_mysql_configuration" "replication" {
+# Geo-replication configuration through flexible server settings
+resource "azurerm_mysql_flexible_server_configuration" "replication" {
   for_each = { for k, v in var.regions : k => v if k != "primary" }
 
   name                = "replicate_wild_ignore_table"
   resource_group_name = azurerm_resource_group.this[each.key].name
-  server_name         = azurerm_mysql_server.this[each.key].name
+  server_name         = azurerm_mysql_flexible_server.regional[each.key].name
   value               = "mysql.%"
-}
-
-# Create replica relationships from primary to secondary regions
-resource "azurerm_mysql_server_key" "replica" {
-  for_each = { for k, v in var.regions : k => v if k != "primary" }
-
-  server_id        = azurerm_mysql_server.this[each.key].id
-  key_vault_key_id = azurerm_key_vault_key.mysql_key.id
-  depends_on       = [module.mysql-kv-access]
 }
 
 resource "azurerm_storage_account" "security" {
