@@ -15,21 +15,21 @@ on:
     branches:
       - main
     paths:
-      - .github/workflows/infrastructure.yml
-      - terraform/**
+      - .github/workflows/deployment.yml
+      - terraform-deployment/**
   pull_request:
     branches:
       - main
     paths:
-      - .github/workflows/infrastructure.yml
-      - terraform/**
+      - .github/workflows/deployment.yml
+      - terraform-deployment/**
 
 jobs:
   validate-infra:
     name: Validate Infrastructure
     uses: ./.github/workflows/terraform-validate.yml
     with:
-      working_directory: "${{ github.workspace }}/terraform/infra"
+      working_directory: "${{ github.workspace }}/terraform-deployment/infra"
       backend_key_suffix: -northeurope
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -41,7 +41,7 @@ jobs:
     name: Validate Kubernetes
     uses: ./.github/workflows/terraform-validate.yml
     with:
-      working_directory: "${{ github.workspace }}/terraform/k8s"
+      working_directory: "${{ github.workspace }}/terraform-deployment/k8s"
       backend_key_suffix: -k8s-northeurope
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
@@ -60,7 +60,7 @@ jobs:
       ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
       ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
       ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
-      PROJECT_WORKING_DIR: "${{ github.workspace }}/terraform/infra"
+      PROJECT_WORKING_DIR: "${{ github.workspace }}/terraform-deployment/infra"
       PROJECT_NAME: "${{ github.event.inputs.project_name }}"
       LOCATION: "${{ github.event.inputs.location }}"
     steps:
@@ -120,7 +120,7 @@ jobs:
       ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
       ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
       ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
-      PROJECT_WORKING_DIR: "${{ github.workspace }}/terraform/k8s"
+      PROJECT_WORKING_DIR: "${{ github.workspace }}/terraform-deployment/k8s"
       PROJECT_NAME: "${{ github.event.inputs.project_name }}"
       LOCATION: "${{ github.event.inputs.location }}"
     steps:

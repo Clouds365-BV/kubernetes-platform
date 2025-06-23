@@ -11,7 +11,7 @@ resource "azurerm_container_registry" "this" {
 }
 
 module "acr_k8s_pull" {
-  source = "../../modules/azure/authorization/role-assignment"
+  source = "../modules/azure/authorization/role-assignment"
 
   object_id            = azurerm_user_assigned_identity.k8s["primary"].principal_id
   role_definition_name = "AcrPull"
@@ -19,7 +19,7 @@ module "acr_k8s_pull" {
 }
 
 module "diagnostic_settings_acr" {
-  source = "../../modules/azure/monitor/diagnostic-settings"
+  source = "../modules/azure/monitor/diagnostic-settings"
 
   name                       = "acr-diagnostic-settings"
   target_resource_id         = azurerm_container_registry.this.id

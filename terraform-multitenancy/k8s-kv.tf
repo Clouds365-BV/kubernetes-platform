@@ -1,5 +1,5 @@
 module "k8s-kv-roles" {
-  source = "../../modules/azure/authorization/role-assignment"
+  source = "../modules/azure/authorization/role-assignment"
   for_each = {
     "key_vault|Key Vault Reader" : azurerm_key_vault.this.id,
     "key_vault|Key Vault Secrets User" : azurerm_key_vault.this.id

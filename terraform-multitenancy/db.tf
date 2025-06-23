@@ -33,7 +33,7 @@ resource "azurerm_mysql_flexible_server" "this" {
 }
 
 module "diagnostic_settings_mysql" {
-  source = "../../modules/azure/monitor/diagnostic-settings"
+  source = "../modules/azure/monitor/diagnostic-settings"
 
   name                       = "mysql-diagnostic-settings"
   target_resource_id         = azurerm_mysql_flexible_server.this.id

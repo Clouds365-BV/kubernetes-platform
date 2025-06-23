@@ -21,7 +21,7 @@ resource "azurerm_user_assigned_identity" "agic" {
 }
 
 module "agw-roles" {
-  source = "../../modules/azure/authorization/role-assignment"
+  source = "../modules/azure/authorization/role-assignment"
   for_each = {
     "Key Vault Secrets User" : azurerm_key_vault.this.id
   }

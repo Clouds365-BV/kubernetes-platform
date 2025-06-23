@@ -1,5 +1,5 @@
 module "application_insights" {
-  source = "../../modules/azure/application-insights"
+  source = "../modules/azure/application-insights"
 
   name                       = "${local.resource_name_prefix}-appi"
   location                   = azurerm_resource_group.this["primary"].location

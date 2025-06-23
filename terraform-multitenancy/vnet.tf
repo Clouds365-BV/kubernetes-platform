@@ -36,7 +36,7 @@ resource "azurerm_virtual_network_peering" "region_peers" {
 }
 
 module "diagnostic_settings_vnet" {
-  source   = "../../modules/azure/monitor/diagnostic-settings"
+  source   = "../modules/azure/monitor/diagnostic-settings"
   for_each = var.regions
 
   name                       = "${each.key}-vnet-diagnostic-settings"

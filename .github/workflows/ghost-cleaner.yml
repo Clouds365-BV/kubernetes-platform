@@ -10,7 +10,7 @@ on:
   pull_request:
     branches:
       - main
-    changes:
+    paths:
       - .github/workflows/ghost-cleaner.yml
       - src/ghost-cleaner/**
 
@@ -79,9 +79,6 @@ jobs:
           context: "${{ env.PROJECT_DIR }}"
           push: true
           tags: "${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }},${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest"
-
-      - name: Setup kustomize
-        uses: imranismail/setup-kustomize@v2
 
       - name: Update kustomization.yaml
         run: |

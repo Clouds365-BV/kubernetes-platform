@@ -26,7 +26,7 @@ resource "azurerm_key_vault" "this" {
 }
 
 module "kv_admin" {
-  source = "../../modules/azure/authorization/role-assignment"
+  source = "../modules/azure/authorization/role-assignment"
 
   object_id            = data.azurerm_client_config.current.object_id
   role_definition_name = "Key Vault Administrator"

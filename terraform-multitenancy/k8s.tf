@@ -9,7 +9,7 @@ resource "azurerm_user_assigned_identity" "k8s" {
 }
 
 module "k8s-roles" {
-  source = "../../modules/azure/authorization/role-assignment"
+  source = "../modules/azure/authorization/role-assignment"
   for_each = {
     for x in flatten([
       for region_key, region in var.regions : [
@@ -205,7 +205,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "team2" {
 }
 
 module "diagnostic_settings_aks" {
-  source = "../../modules/azure/monitor/diagnostic-settings"
+  source = "../modules/azure/monitor/diagnostic-settings"
 
   name                       = "aks-diagnostic-settings"
   target_resource_id         = azurerm_kubernetes_cluster.this["primary"].id
