@@ -1,21 +1,7 @@
-resource "azurerm_public_ip" "agw" {
-  for_each = var.regions
-
-  name                = "${local.resource_name_prefix}-${each.key}-agw-pip"
-  resource_group_name = azurerm_resource_group.this[each.key].name
-  location            = azurerm_resource_group.this[each.key].location
-  allocation_method   = "Static"
-  sku                 = "Standard"
-
-  tags = local.tags
-}
-
-resource "azurerm_user_assigned_identity" "agic" {
-  for_each = var.regions
-
-  name                = "${local.resource_name_prefix}-${each.key}-agic-id"
-  resource_group_name = azurerm_resource_group.this[each.key].name
-  location            = azurerm_resource_group.this[each.key].location
+resource "azurerm_user_assigned_identity" "agw" {
+  name                = "${local.resource_name_prefix}-agw-id"
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
 
   tags = local.tags
 }
@@ -32,101 +18,91 @@ module "agw-roles" {
 }
 
 resource "azurerm_application_gateway" "this" {
-  for_each = var.regions
-
-  name                = "${local.resource_name_prefix}-${each.key}-agw"
-  resource_group_name = azurerm_resource_group.this[each.key].name
-  location            = azurerm_resource_group.this[each.key].location
+  name                = "${local.resource_name_prefix}-agw"
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
 
   sku {
-    name     = "WAF_v2"
-    tier     = "WAF_v2"
-    capacity = 2
+    name     = "Standard_v2"
+    tier     = "Standard_v2"
+    capacity = 1
   }
 
-  waf_configuration {
-    enabled                  = true
-    firewall_mode            = "Prevention"
-    rule_set_type            = "OWASP"
-    rule_set_version         = "3.2"
-    file_upload_limit_mb     = 100
-    request_body_check       = true
-    max_request_body_size_kb = 128
+  ssl_policy {
+    disabled_protocols = ["TLSv1_0", "TLSv1_1"]
   }
 
   gateway_ip_configuration {
-    name      = "gateway-ip-configuration"
-    subnet_id = azurerm_subnet.this["${each.key}-agw"].id
+    name      = "AppGatewayIpConfig"
+    subnet_id = azurerm_subnet.this["app_gateway"].id
+  }
+
+  ssl_certificate {
+    name                = "drones-shuttles"
+    key_vault_secret_id = azurerm_key_vault_certificate.drones_shuttles.secret_id
   }
 
   frontend_port {
-    name = "http"
+    name = "HttpPort"
     port = 80
   }
 
-  frontend_port {
-    name = "https"
-    port = 443
-  }
-
   frontend_ip_configuration {
-    name                 = "frontend-ip-configuration"
-    public_ip_address_id = azurerm_public_ip.agw[each.key].id
+    name                 = "AppGatewayFrontendIp"
+    public_ip_address_id = azurerm_public_ip.this["app_gateway"].id
   }
 
   backend_address_pool {
-    name  = "dummy"
-    fqdns = ["ghost.example.com"]
+    name = "AksBackendPool"
   }
 
   backend_http_settings {
-    name                  = "dummy"
+    name                  = "AksBackendHttpSettings"
     cookie_based_affinity = "Disabled"
     port                  = 80
     protocol              = "Http"
-    request_timeout       = 30
+    request_timeout       = 20
   }
 
   http_listener {
-    name                           = "dummy"
-    frontend_ip_configuration_name = "frontend-ip-configuration"
-    frontend_port_name             = "http"
+    name                           = "HttpListener"
+    frontend_ip_configuration_name = "AppGatewayFrontendIp"
+    frontend_port_name             = "HttpPort"
     protocol                       = "Http"
   }
 
   request_routing_rule {
-    name                       = "dummy"
+    name                       = "HttpRoutingRule"
+    http_listener_name         = "HttpListener"
+    backend_address_pool_name  = "AksBackendPool"
+    backend_http_settings_name = "AksBackendHttpSettings"
     rule_type                  = "Basic"
-    http_listener_name         = "dummy"
-    backend_address_pool_name  = "dummy"
-    backend_http_settings_name = "dummy"
-    priority                   = 100
+    priority                   = 10
   }
 
   identity {
     type = "UserAssigned"
     identity_ids = [
-      azurerm_user_assigned_identity.agic[each.key].id
+      azurerm_user_assigned_identity.agw.id
     ]
   }
 
+  lifecycle {
+    ignore_changes = [
+      backend_address_pool,
+      backend_http_settings,
+      http_listener,
+      probe,
+      request_routing_rule,
+      url_path_map,
+      tags["ingress-for-aks-cluster-id"],
+      tags["managed-by-k8s-ingress"],
+    ]
+  }
+
+  depends_on = [
+    module.agw-roles
+  ]
+
   tags = local.tags
-}
-
-# Contributor role for AGIC identity on the Application Gateway
-resource "azurerm_role_assignment" "agic_contributor" {
-  for_each = var.regions
-
-  scope                = azurerm_application_gateway.this[each.key].id
-  role_definition_name = "Contributor"
-  principal_id         = azurerm_user_assigned_identity.agic[each.key].principal_id
-}
-
-# Reader role for AGIC identity on the Resource Group
-resource "azurerm_role_assignment" "agic_reader" {
-  for_each = var.regions
-
-  scope                = azurerm_resource_group.this[each.key].id
-  role_definition_name = "Reader"
-  principal_id         = azurerm_user_assigned_identity.agic[each.key].principal_id
 }
