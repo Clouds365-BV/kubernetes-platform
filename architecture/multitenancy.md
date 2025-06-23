@@ -4,7 +4,7 @@
 
 This document outlines a secure, scalable, and highly available Kubernetes architecture design for Drone Shuttles Ltd, extending their existing AKS implementation to meet their growing requirements.
 
-![Architecture Diagram](../src/images/k8s-architecture.png)
+![Architecture Diagram](multitenancy.png)
 
 ## Architecture Components
 
