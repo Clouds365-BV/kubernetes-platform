@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 1.11.0"
+  required_version = "~> 1.12.0"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -25,13 +25,17 @@ provider "azurerm" {
 }
 
 provider "kubernetes" {
-  config_path    = "~/.kube/config"
-  config_context = "k8s"
+  host                   = azurerm_kubernetes_cluster.this["primary"].kube_config.0.host
+  client_certificate     = base64decode(azurerm_kubernetes_cluster.this["primary"].kube_config.0.client_certificate)
+  client_key             = base64decode(azurerm_kubernetes_cluster.this["primary"].kube_config.0.client_key)
+  cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.this["primary"].kube_config.0.cluster_ca_certificate)
 }
 
 provider "helm" {
-  kubernetes = {
-    config_path    = "~/.kube/config"
-    config_context = "k8s"
+  kubernetes {
+    host                   = data.azurerm_kubernetes_cluster.this.kube_config.0.host
+    client_certificate     = base64decode(data.azurerm_kubernetes_cluster.this.kube_config.0.client_certificate)
+    client_key             = base64decode(data.azurerm_kubernetes_cluster.this.kube_config.0.client_key)
+    cluster_ca_certificate = base64decode(data.azurerm_kubernetes_cluster.this.kube_config.0.cluster_ca_certificate)
   }
 }

@@ -1,6 +1,6 @@
 resource "azurerm_email_communication_service" "this" {
   name                = "${local.resource_name_prefix}-email"
-  resource_group_name = azurerm_resource_group.this.name
+  resource_group_name = azurerm_resource_group.this["primary"].name
   data_location       = "Europe"
 
   tags = local.tags

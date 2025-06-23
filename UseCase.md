@@ -22,7 +22,6 @@ Please implement your solution using the public cloud platform that is mentioned
 E.g. if you applied for an AWS-role, your solution should also be on AWS.
 
 ## Acceptance Criteria
-
 - The application should be able to scale depending on the load.
 - There should be no obvious security flaws.
 - The application must return consistent results across sessions.
