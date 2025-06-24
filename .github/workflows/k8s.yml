@@ -55,6 +55,7 @@ jobs:
       AZURE_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
       AZURE_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
       AZURE_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
+      TF_BACKEND_SUBSCRIPTION_ID: "${{ secrets.TF_BACKEND_SUBSCRIPTION_ID }}"
 
   infra:
     name: Deploy Infrastructure
@@ -66,6 +67,7 @@ jobs:
       ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
       ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
       ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
+      TF_BACKEND_SUBSCRIPTION_ID: "${{ secrets.TF_BACKEND_SUBSCRIPTION_ID }}"
       PROJECT_WORKING_DIR: terraform/k8s
       PROJECT_NAME: "${{ github.event.inputs.project_name }}"
       LOCATION: "${{ github.event.inputs.location }}"
@@ -83,7 +85,7 @@ jobs:
         run: >
           terraform init
           -input=false
-          -backend-config="subscription_id=$ARM_SUBSCRIPTION_ID"
+          -backend-config="subscription_id=$TF_BACKEND_SUBSCRIPTION_ID"
           -backend-config="resource_group_name=clouds365"
           -backend-config="storage_account_name=clouds365"
           -backend-config="container_name=tfstate"

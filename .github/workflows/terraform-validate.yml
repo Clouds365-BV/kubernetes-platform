@@ -20,6 +20,8 @@ on:
         required: true
       AZURE_CLIENT_SECRET:
         required: true
+      TF_BACKEND_SUBSCRIPTION_ID:
+        required: true
 
 jobs:
   validate:
@@ -28,6 +30,7 @@ jobs:
     env:
       ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
       ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+      TF_BACKEND_SUBSCRIPTION_ID: "${{ secrets.TF_BACKEND_SUBSCRIPTION_ID }}"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,7 +61,7 @@ jobs:
         run: >
           terraform init
           -input=false
-          -backend-config="subscription_id=$ARM_SUBSCRIPTION_ID"
+          -backend-config="subscription_id=$TF_BACKEND_SUBSCRIPTION_ID"
           -backend-config="resource_group_name=clouds365"
           -backend-config="storage_account_name=clouds365"
           -backend-config="container_name=tfstate"
