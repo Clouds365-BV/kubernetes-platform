@@ -7,10 +7,10 @@ on:
         required: true
         type: string
         description: "The directory containing Terraform files to validate"
-      backend_key_suffix:
+      backend_key:
         required: true
         type: string
-        description: "The suffix for state file key (e.g., -northeurope or -k8s-northeurope)"
+        description: "The state file key"
     secrets:
       AZURE_TENANT_ID:
         required: true
@@ -69,10 +69,10 @@ jobs:
           terraform init
           -input=false
           -backend-config="subscription_id=$ARM_SUBSCRIPTION_ID"
-          -backend-config="resource_group_name=terraform"
-          -backend-config="storage_account_name=ncterraform"
-          -backend-config="container_name=state"
-          -backend-config="key=drone-${{env.selected-environment}}${{ inputs.backend_key_suffix }}.tfstate"
+          -backend-config="resource_group_name=clouds365"
+          -backend-config="storage_account_name=clouds365"
+          -backend-config="container_name=tfstate"
+          -backend-config="key=${{ inputs.backend_key }}"
         working-directory: ${{ inputs.working_directory }}
 
       - name: Terraform Validate

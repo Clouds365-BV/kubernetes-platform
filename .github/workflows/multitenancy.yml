@@ -30,7 +30,7 @@ jobs:
     uses: ./.github/workflows/terraform-validate.yml
     with:
       working_directory: "${{ github.workspace }}/terraform-multitenancy"
-      backend_key_suffix: -northeurope
+      backend_key: "${PROJECT_NAME}-${{env.selected-environment}}-${LOCATION}.tfstate"
     secrets:
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
@@ -87,7 +87,7 @@ jobs:
           -input=false
           --var="project_name=${PROJECT_NAME}"
           --var="location=${LOCATION}"
-          --varfile="${{env.selected-environment}}/${LOCATION}.tfvars"
+          --var-file="${{env.selected-environment}}/${LOCATION}.tfvars"
           -out=tfplan
         working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 

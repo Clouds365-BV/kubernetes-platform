@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Kubernetes tools
         uses: yokawasa/action-setup-kube-tools@v0.9.3
@@ -43,13 +43,13 @@ jobs:
     if: github.event_name == 'push'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to Azure Container Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           registry: ${{ secrets.ACR_SERVER }}
           username: ${{ secrets.ACR_USERNAME }}
@@ -63,9 +63,9 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: src/ghost-cleaner/Dockerfile
+          file: src/blog-cleaner/Dockerfile
           push: true
-          tags: ${{ secrets.ACR_SERVER }}/ghost-cleaner:${{ env.BRANCH_NAME }}-${{ github.sha }}
+          tags: ${{ secrets.ACR_SERVER }}/blog-cleaner:${{ env.BRANCH_NAME }}-${{ github.sha }}
 
   deploy:
     name: Deploy to Kubernetes
@@ -74,7 +74,7 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Kustomize
         uses: imranismail/setup-kustomize@v2
