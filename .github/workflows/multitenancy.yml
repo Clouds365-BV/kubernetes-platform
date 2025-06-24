@@ -1,4 +1,4 @@
-name: Deploy infra and configure k8s
+name: Deploy multitenant k8s
 
 on:
   workflow_dispatch:
