@@ -1,11 +1,11 @@
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
-  name: drone-cleaner-scaler
+  name: blog-cleaner-scaler
   namespace: admin
 spec:
   scaleTargetRef:
-    name: drone-cleaner
+    name: blog-cleaner
     kind: Deployment
   minReplicaCount: 1
   maxReplicaCount: 3

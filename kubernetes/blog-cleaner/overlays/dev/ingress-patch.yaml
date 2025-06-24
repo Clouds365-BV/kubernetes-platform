@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: drone-cleaner-ingress
+  name: blog-cleaner-ingress
   namespace: admin
   annotations:
     kubernetes.io/ingress.class: "nginx"
@@ -12,11 +12,11 @@ spec:
     - host: dev.drones-shuttles.org
       http:
         paths:
-          - path: /drone-cleaner(/|$)(.*)
+          - path: /blog-cleaner(/|$)(.*)
             pathType: Prefix
             backend:
               service:
-                name: drone-cleaner
+                name: blog-cleaner
                 port:
                   number: 80
 

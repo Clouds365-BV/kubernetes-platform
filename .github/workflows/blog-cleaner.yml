@@ -1,4 +1,4 @@
-name: Build and Deploy Drone Cleaner
+name: Build and deploy blog cleaner
 
 on:
   push:
@@ -6,17 +6,17 @@ on:
       - main
       - develop
     paths:
-      - .github/workflows/drone-cleaner.yml
-      - src/drone-cleaner/**
-      - kubernetes/drone-cleaner/**
+      - .github/workflows/blog-cleaner.yml
+      - src/blog-cleaner/**
+      - kubernetes/blog-cleaner/**
   pull_request:
     branches:
       - main
       - develop
     paths:
-      - .github/workflows/drone-cleaner.yml
-      - src/drone-cleaner/**
-      - kubernetes/drone-cleaner/**
+      - .github/workflows/blog-cleaner.yml
+      - src/blog-cleaner/**
+      - kubernetes/blog-cleaner/**
 
 jobs:
   python-lint:
@@ -38,37 +38,37 @@ jobs:
           pip install pipenv
 
       - name: Install dependencies with pipenv
-        working-directory: ${{ github.workspace }}/src/drone-cleaner
+        working-directory: ${{ github.workspace }}/src/blog-cleaner
         run: |
           pipenv install --dev
 
       - name: Generate requirements.txt from Pipfile
-        working-directory: ${{ github.workspace }}/src/drone-cleaner
+        working-directory: ${{ github.workspace }}/src/blog-cleaner
         run: |
           pipenv requirements > requirements.txt
           echo "Generated requirements.txt file:"
           cat requirements.txt
 
       - name: Run ruff linter
-        working-directory: ${{ github.workspace }}/src/drone-cleaner
+        working-directory: ${{ github.workspace }}/src/blog-cleaner
         run: |
           pipenv install ruff
           pipenv run ruff .
 
       - name: Run pylint
-        working-directory: ${{ github.workspace }}/src/drone-cleaner
+        working-directory: ${{ github.workspace }}/src/blog-cleaner
         run: |
           pipenv install pylint
           pipenv run pylint *.py
 
       - name: Run mypy type checking
-        working-directory: ${{ github.workspace }}/src/drone-cleaner
+        working-directory: ${{ github.workspace }}/src/blog-cleaner
         run: |
           pipenv install mypy
           pipenv run mypy .
 
       - name: Run pytest with coverage
-        working-directory: ${{ github.workspace }}/src/drone-cleaner
+        working-directory: ${{ github.workspace }}/src/blog-cleaner
         run: |
           pipenv install pytest pytest-cov
           pipenv run pytest --cov=. --cov-report=xml
@@ -76,7 +76,7 @@ jobs:
       - name: Upload coverage report
         uses: codecov/codecov-action@v3
         with:
-          file: ./src/drone-cleaner/coverage.xml
+          file: ./src/blog-cleaner/coverage.xml
           fail_ci_if_error: false
 
   k8s-lint:
@@ -94,11 +94,11 @@ jobs:
 
       - name: Validate kustomize build
         run: |
-          kustomize build kubernetes/drone-cleaner/base --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary
+          kustomize build kubernetes/blog-cleaner/base --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary
 
       - name: Validate dev overlay
         run: |
-          kustomize build kubernetes/drone-cleaner/overlays/dev --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary
+          kustomize build kubernetes/blog-cleaner/overlays/dev --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary
 
   build-and-deploy:
     runs-on: self-hosted
@@ -106,9 +106,9 @@ jobs:
     env:
       ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
       ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-      PROJECT_DIR: "${{ github.workspace }}/src/drone-cleaner"
-      K8S_DIR: "${{ github.workspace }}/kubernetes/drone-cleaner"
-      IMAGE_NAME: drone-cleaner
+      PROJECT_DIR: "${{ github.workspace }}/src/blog-cleaner"
+      K8S_DIR: "${{ github.workspace }}/kubernetes/blog-cleaner"
+      IMAGE_NAME: blog-cleaner
 
     steps:
       - name: Select environment
@@ -184,11 +184,11 @@ jobs:
         run: |
           # Update the image tag in the kustomization.yaml for the appropriate environment
           cd ${{ env.K8S_DIR }}/overlays/${{ env.k8s-environment }}
-          kustomize edit set image drone-cleaner=${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          kustomize edit set image blog-cleaner=${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
           
           # Deploy using kustomize
           kubectl create namespace admin --dry-run=client -o yaml | kubectl apply -f -
           kustomize build . | kubectl apply -f -
           
           # Verify deployment
-          kubectl rollout status deployment/drone-cleaner -n admin --timeout=180s
+          kubectl rollout status deployment/blog-cleaner -n admin --timeout=180s

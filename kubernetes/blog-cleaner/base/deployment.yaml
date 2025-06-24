@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: drone-cleaner
+  name: blog-cleaner
   namespace: admin
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: drone-cleaner
+      app: blog-cleaner
   template:
     metadata:
       labels:
-        app: drone-cleaner
+        app: blog-cleaner
     spec:
       containers:
-        - name: drone-cleaner
-          image: drone-cleaner:latest
+        - name: blog-cleaner
+          image: blog-cleaner:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5000
@@ -25,7 +25,7 @@ spec:
             - name: GHOST_ADMIN_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: drone-cleaner-secret
+                  name: blog-cleaner-secret
                   key: admin-api-key
           resources:
             requests:

@@ -9,7 +9,7 @@ patchesStrategicMerge:
   - deployment-patch.yaml
 
 configMapGenerator:
-  - name: drone-cleaner-config
+  - name: blog-cleaner-config
     literals:
       - environment=dev
 

@@ -5,6 +5,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY drone_cleaner.py .
+COPY blog_cleaner.py .
 
-CMD ["python", "drone_cleaner.py"]
+CMD ["python", "blog_cleaner.py"]

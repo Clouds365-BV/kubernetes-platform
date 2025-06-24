@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: drone-cleaner
+  name: blog-cleaner
   namespace: admin
 spec:
   template:
     spec:
       containers:
-        - name: drone-cleaner
-          image: drone-cleaner:dev
+        - name: blog-cleaner
+          image: blog-cleaner:dev
           env:
             - name: GHOST_URL
               value: "http://blog.blog.svc.cluster.local"
