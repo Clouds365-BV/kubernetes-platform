@@ -26,19 +26,9 @@ jobs:
     name: Validate Terraform
     runs-on: ubuntu-latest
     env:
-      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+      ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
     steps:
-      - name: Select environment
-        run: |
-          if [ "${{ github.ref_name }}" == "main" ]; then
-            echo "production"
-            echo "selected-environment=prd" >> "$GITHUB_ENV"
-          else
-            echo "development"
-            echo "selected-environment=dev" >> "$GITHUB_ENV"
-          fi
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -55,11 +45,11 @@ jobs:
           output_file_path: console
           quiet: true
           soft_fail: true
-          directory: ${{ inputs.working_directory }}
+          directory: "${{ inputs.working_directory }}"
 
       - name: Terraform Format
         run: terraform fmt -check
-        working-directory: ${{ inputs.working_directory }}
+        working-directory: "${{ inputs.working_directory }}"
 
       - name: Terraform Init
         env:
@@ -73,8 +63,8 @@ jobs:
           -backend-config="storage_account_name=clouds365"
           -backend-config="container_name=tfstate"
           -backend-config="key=${{ inputs.backend_key }}"
-        working-directory: ${{ inputs.working_directory }}
+        working-directory: "${{ inputs.working_directory }}"
 
       - name: Terraform Validate
         run: terraform validate
-        working-directory: ${{ inputs.working_directory }}
+        working-directory: "${{ inputs.working_directory }}"

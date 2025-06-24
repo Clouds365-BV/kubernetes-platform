@@ -48,7 +48,7 @@ jobs:
       - select-environment
     uses: ./.github/workflows/terraform-validate.yml
     with:
-      working_directory: "${{ github.workspace }}/terraform-multitenancy"
+      working_directory: terraform/k8s-multitenancy
       backend_key: "${{ github.event.inputs.project_name }}-${{ needs.select-environment.outputs.selected-environment }}-${{ github.event.inputs.location }}.tfstate"
     secrets:
       AZURE_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
@@ -67,7 +67,7 @@ jobs:
       ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
       ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
       ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
-      PROJECT_WORKING_DIR: "${{ github.workspace }}/terraform-multitenancy"
+      PROJECT_WORKING_DIR: terraform/k8s-multitenancy
       PROJECT_NAME: "${{ github.event.inputs.project_name }}"
       LOCATION: "${{ github.event.inputs.location }}"
       SELECTED_ENVIRONMENT: "${{ needs.select-environment.outputs.selected-environment }}"
