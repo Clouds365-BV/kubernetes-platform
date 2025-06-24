@@ -1,4 +1,4 @@
-name: Deploy multitenant k8s
+name: K8s Multitenancy
 
 on:
   workflow_dispatch:
@@ -6,9 +6,9 @@ on:
       project_name:
         description: Name of the project
         required: true
-        default: multi
+        default: k8s-multi
       location:
-        description: Azure region for deployment
+        description: Azure region
         required: true
         default: northeurope
   push:
@@ -49,7 +49,7 @@ jobs:
     uses: ./.github/workflows/terraform-validate.yml
     with:
       working_directory: terraform/k8s-multitenancy
-      backend_key: "${{ github.event.inputs.project_name }}-${{ needs.select-environment.outputs.selected-environment }}-${{ github.event.inputs.location }}.tfstate"
+      backend_key: "${{ inputs.project_name }}-${{ needs.select-environment.outputs.selected-environment }}-${{ inputs.location }}.tfstate"
     secrets:
       AZURE_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
       AZURE_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
@@ -64,15 +64,15 @@ jobs:
       - select-environment
       - validate-infra
     env:
+      SELECTED_ENVIRONMENT: "${{ needs.select-environment.outputs.selected-environment }}"
       ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
       ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
       ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
       ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
       TF_BACKEND_SUBSCRIPTION_ID: "${{ secrets.TF_BACKEND_SUBSCRIPTION_ID }}"
+      PROJECT_NAME: "${{ inputs.project_name }}"
       PROJECT_WORKING_DIR: terraform/k8s-multitenancy
-      PROJECT_NAME: "${{ github.event.inputs.project_name }}"
-      LOCATION: "${{ github.event.inputs.location }}"
-      SELECTED_ENVIRONMENT: "${{ needs.select-environment.outputs.selected-environment }}"
+      LOCATION: "${{ inputs.location }}"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -86,20 +86,20 @@ jobs:
         run: >
           terraform init
           -input=false
-          -backend-config="subscription_id=${TF_BACKEND_SUBSCRIPTION_ID}"
+          -backend-config="subscription_id=$TF_BACKEND_SUBSCRIPTION_ID"
           -backend-config="resource_group_name=clouds365"
           -backend-config="storage_account_name=clouds365"
           -backend-config="container_name=tfstate"
-          -backend-config="key=${PROJECT_NAME}-${SELECTED_ENVIRONMENT}-${LOCATION}.tfstate"
+          -backend-config="key=$PROJECT_NAME-$SELECTED_ENVIRONMENT-$LOCATION.tfstate"
         working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 
       - name: Terraform Plan
         run: >
           terraform plan
           -input=false
-          --var="project_name=${PROJECT_NAME}"
-          --var="location=${LOCATION}"
-          --var-file="${SELECTED_ENVIRONMENT}/${LOCATION}.tfvars"
+          --var="project_name=$PROJECT_NAME"
+          --var="location=$LOCATION"
+          --var-file="$SELECTED_ENVIRONMENT/$LOCATION.tfvars"
           -out=tfplan
         working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 
