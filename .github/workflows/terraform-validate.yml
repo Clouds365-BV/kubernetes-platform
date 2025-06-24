@@ -27,10 +27,6 @@ jobs:
   validate:
     name: Validate Terraform
     runs-on: ubuntu-latest
-    env:
-      ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
-      ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-      TF_BACKEND_SUBSCRIPTION_ID: "${{ secrets.TF_BACKEND_SUBSCRIPTION_ID }}"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -56,12 +52,14 @@ jobs:
 
       - name: Terraform Init
         env:
+          ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+          ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
           ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
         run: >
           terraform init
           -input=false
-          -backend-config="subscription_id=$TF_BACKEND_SUBSCRIPTION_ID"
+          -backend-config="subscription_id=${{ secrets.TF_BACKEND_SUBSCRIPTION_ID }}"
           -backend-config="resource_group_name=clouds365"
           -backend-config="storage_account_name=clouds365"
           -backend-config="container_name=tfstate"
