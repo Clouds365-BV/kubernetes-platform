@@ -25,12 +25,31 @@ on:
       - terraform/k8s/**
 
 jobs:
+  select-environment:
+    name: Select Environment
+    runs-on: ubuntu-latest
+    outputs:
+      selected-environment: ${{ steps.set-env.outputs.environment }}
+    steps:
+      - name: Set environment
+        id: set-env
+        run: |
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            echo "Environment: production"
+            echo "environment=prd" >> "$GITHUB_OUTPUT"
+          else
+            echo "Environment: development"
+            echo "environment=dev" >> "$GITHUB_OUTPUT"
+          fi
+
   validate-infra:
     name: Validate Infrastructure
+    needs:
+      - select-environment
     uses: ./.github/workflows/terraform-validate.yml
     with:
       working_directory: "${{ github.workspace }}/terraform/k8s"
-      backend_key: "${PROJECT_NAME}-${{env.selected-environment}}-${LOCATION}.tfstate"
+      backend_key: "${{ github.event.inputs.project_name }}-${{ needs.select-environment.outputs.selected-environment }}-${{ github.event.inputs.location }}.tfstate"
     secrets:
       AZURE_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
       AZURE_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
@@ -50,17 +69,8 @@ jobs:
       PROJECT_WORKING_DIR: "${{ github.workspace }}/terraform/k8s"
       PROJECT_NAME: "${{ github.event.inputs.project_name }}"
       LOCATION: "${{ github.event.inputs.location }}"
+      SELECTED_ENVIRONMENT: "${{ needs.select-environment.outputs.selected-environment }}"
     steps:
-      - name: Select environment
-        run: |
-          if [ "${{ github.ref_name }}" == "main" ]; then
-            echo "production"
-            echo "selected-environment=prd" >> "$GITHUB_ENV"
-          else
-            echo "development"
-            echo "selected-environment=dev" >> "$GITHUB_ENV"
-          fi
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -77,7 +87,7 @@ jobs:
           -backend-config="resource_group_name=clouds365"
           -backend-config="storage_account_name=clouds365"
           -backend-config="container_name=tfstate"
-          -backend-config="key=${PROJECT_NAME}-${{env.selected-environment}}-${LOCATION}.tfstate"
+          -backend-config="key=${PROJECT_NAME}-${SELECTED_ENVIRONMENT}-${LOCATION}.tfstate"
         working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 
       - name: Terraform Plan
@@ -86,7 +96,7 @@ jobs:
           -input=false
           --var="project_name=${PROJECT_NAME}"
           --var="location=${LOCATION}"
-          --var-file="${{env.selected-environment}}/${LOCATION}.tfvars"
+          --var-file="${SELECTED_ENVIRONMENT}/${LOCATION}.tfvars"
           -out=tfplan
         working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 
