@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blog
+  namespace: blog
+  labels:
+    app: blog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: blog
+  template:
+    metadata:
+      labels:
+        app: blog
+    spec:
+      volumes:
+        - name: blog-content
+          persistentVolumeClaim:
+            claimName: blog-claim
+        - name: database-secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: azure-database-kv
+        - name: smtp-secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: azure-smtp-kv
+      containers:
+        - name: ghost
+          image: ghost:5
+          imagePullPolicy: Always
+          env:
+            - name: url
+              value: http://drones-shuttles.org
+            - name: mail__from
+              value: no-reply@mg.drones-shuttles.org
+            - name: mail__transport
+              value: SMTP
+            - name: mail__options__service
+              value: Mailgun
+          envFrom:
+            - secretRef:
+                name: database-connection
+            - secretRef:
+                name: smtp-connection
+          ports:
+            - containerPort: 2368
+          volumeMounts:
+            - name: blog-content
+              mountPath: /var/lib/ghost/content
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "200m"
+

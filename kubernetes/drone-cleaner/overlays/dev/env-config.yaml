@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: env-config
+  namespace: admin
+data:
+  ghost_admin_api_key: "${GHOST_ADMIN_API_KEY}"
+

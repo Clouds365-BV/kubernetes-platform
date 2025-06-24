@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: drone-cleaner
+  namespace: admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: drone-cleaner
+  template:
+    metadata:
+      labels:
+        app: drone-cleaner
+    spec:
+      containers:
+        - name: drone-cleaner
+          image: drone-cleaner:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5000
+          env:
+            - name: GHOST_URL
+              value: "http://blog.blog.svc.cluster.local"
+            - name: GHOST_ADMIN_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: drone-cleaner-secret
+                  key: admin-api-key
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
