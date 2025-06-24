@@ -6,17 +6,6 @@ resource "azurerm_user_assigned_identity" "k8s" {
   tags = local.tags
 }
 
-module "k8s-roles" {
-  source = "../../modules/azure/authorization/role-assignment"
-  for_each = {
-    "private_dns_zone|Private DNS Zone Contributor" : azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
-  }
-
-  object_id            = azurerm_user_assigned_identity.k8s.principal_id
-  role_definition_name = split("|", each.key)[1]
-  resource_id          = each.value
-}
-
 resource "azurerm_kubernetes_cluster" "this" {
   #checkov:skip=CKV_AZURE_116: "Ensure that AKS uses Azure Policies Add-on"
   #checkov:skip=CKV_AZURE_117: "Ensure that AKS use the Paid Sku for its SLA"
@@ -30,9 +19,6 @@ resource "azurerm_kubernetes_cluster" "this" {
   workload_autoscaler_profile {
     keda_enabled = true
   }
-  private_cluster_enabled             = true
-  private_cluster_public_fqdn_enabled = true
-  private_dns_zone_id                 = azurerm_private_dns_zone.this["privatelink.northeurope.azmk8s.io"].id
   kubernetes_version                  = "1.30"
   local_account_disabled              = true
   role_based_access_control_enabled   = true
@@ -41,9 +27,6 @@ resource "azurerm_kubernetes_cluster" "this" {
   node_os_upgrade_channel             = "SecurityPatch"
   image_cleaner_enabled               = true
   image_cleaner_interval_hours        = 168
-  ingress_application_gateway {
-    gateway_id = azurerm_application_gateway.this.id
-  }
   azure_active_directory_role_based_access_control {
     azure_rbac_enabled = true
     admin_group_object_ids = [
@@ -96,35 +79,62 @@ resource "azurerm_kubernetes_cluster" "this" {
     ]
   }
 
-  depends_on = [
-    module.k8s-roles
-  ]
-
   tags = local.tags
 }
 
-# resource "azurerm_kubernetes_cluster_node_pool" "blog" {
-#   name                        = "blog"
-#   kubernetes_cluster_id       = azurerm_kubernetes_cluster.this.id
-#   vnet_subnet_id              = azurerm_subnet.this["k8s"].id
-#   temporary_name_for_rotation = "blogrot"
-#   vm_size                     = "Standard_D2s_v6"
-#   min_count                   = 1
-#   max_count                   = 5
-#   auto_scaling_enabled        = true
-#   orchestrator_version        = "1.30"
-#   host_encryption_enabled     = true
-#   fips_enabled                = false
-#   node_public_ip_enabled      = false
-#   upgrade_settings {
-#     drain_timeout_in_minutes      = 0
-#     max_surge                     = "10%"
-#     node_soak_duration_in_minutes = 0
-#   }
-#
-#   node_labels = {
-#     "drones/nodepool" = "blog"
-#   }
-#
-#   tags = local.tags
-# }
+module "diagnostic_settings_aks" {
+  source = "../../modules/azure/monitor/diagnostic-settings"
+
+  name                       = "aks-diagnostic-settings"
+  target_resource_id         = azurerm_kubernetes_cluster.this.id
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.this.id
+  logs = [
+    {
+      category = "kube-apiserver"
+    },
+    {
+      category = "kube-audit"
+    },
+    {
+      category = "kube-audit-admin"
+    },
+    {
+      category = "kube-controller-manager"
+    },
+    {
+      category = "kube-scheduler"
+    },
+    {
+      category = "cluster-autoscaler"
+    },
+    {
+      category = "cloud-controller-manager"
+    },
+    {
+      category = "guard"
+    },
+    {
+      category = "csi-azuredisk-controller"
+    },
+    {
+      category = "csi-azurefile-controller"
+    },
+    {
+      category = "csi-snapshot-controller"
+    },
+    {
+      category = "fleet-member-agent"
+    },
+    {
+      category = "fleet-member-net-controller-manager"
+    },
+    {
+      category = "fleet-mcs-controller-manager"
+    }
+  ]
+  metrics = [
+    {
+      category = "AllMetrics"
+    }
+  ]
+}

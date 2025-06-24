@@ -1,0 +1,10 @@
+env = {
+  name           = "development"
+  name_short     = "dev"
+  location_short = "ne"
+  tags = {
+    Environment = "development"
+    Owner       = "Drone Shuttles"
+    Project     = "Ghost"
+  }
+}

@@ -6,7 +6,7 @@ on:
       project_name:
         description: Name of the project
         required: true
-        default: drone
+        default: multi
       location:
         description: Azure region for deployment
         required: true
@@ -75,9 +75,9 @@ jobs:
           terraform init
           -input=false
           -backend-config="subscription_id=$ARM_SUBSCRIPTION_ID"
-          -backend-config="resource_group_name=terraform"
-          -backend-config="storage_account_name=ncterraform"
-          -backend-config="container_name=state"
+          -backend-config="resource_group_name=clouds365"
+          -backend-config="storage_account_name=clouds365"
+          -backend-config="container_name=tfstate"
           -backend-config="key=${PROJECT_NAME}-${{env.selected-environment}}-${LOCATION}.tfstate"
         working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 
@@ -87,6 +87,7 @@ jobs:
           -input=false
           --var="project_name=${PROJECT_NAME}"
           --var="location=${LOCATION}"
+          --varfile="${{env.selected-environment}}/${LOCATION}.tfvars"
           -out=tfplan
         working-directory: "${{ env.PROJECT_WORKING_DIR }}"
 

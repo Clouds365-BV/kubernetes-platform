@@ -17,8 +17,7 @@ resource "azurerm_key_vault" "this" {
     default_action = "Allow"
     ip_rules       = []
     virtual_network_subnet_ids = [
-      azurerm_subnet.this["k8s"].id,
-      azurerm_subnet.this["app_gateway"].id
+      azurerm_subnet.this["k8s"].id
     ]
   }
 
