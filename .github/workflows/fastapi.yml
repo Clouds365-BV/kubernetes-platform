@@ -1,18 +1,18 @@
-name: Build and deploy blog cleaner
+name: Build and deploy FastAPI
 
 on:
   push:
     branches:
       - main
     paths:
-      - .github/workflows/blog-cleaner.yml
-      - src/blog-cleaner/**
+      - .github/workflows/fastapi.yml
+      - src/fastapi/**
   pull_request:
     branches:
       - main
     paths:
-      - .github/workflows/blog-cleaner.yml
-      - src/blog-cleaner/**
+      - .github/workflows/fastapi.yml
+      - src/fastapi/**
 
 jobs:
   python-lint:
@@ -34,37 +34,37 @@ jobs:
           pip install pipenv
 
       - name: Install dependencies with pipenv
-        working-directory: ${{ github.workspace }}/src/blog-cleaner
+        working-directory: ${{ github.workspace }}/src/fastapi
         run: |
           pipenv install --dev
 
       - name: Generate requirements.txt from Pipfile
-        working-directory: ${{ github.workspace }}/src/blog-cleaner
+        working-directory: ${{ github.workspace }}/src/fastapi
         run: |
           pipenv requirements > requirements.txt
           echo "Generated requirements.txt file:"
           cat requirements.txt
 
       - name: Run ruff linter
-        working-directory: ${{ github.workspace }}/src/blog-cleaner
+        working-directory: ${{ github.workspace }}/src/fastapi
         run: |
           pipenv install ruff
           pipenv run ruff .
 
       - name: Run pylint
-        working-directory: ${{ github.workspace }}/src/blog-cleaner
+        working-directory: ${{ github.workspace }}/src/fastapi
         run: |
           pipenv install pylint
           pipenv run pylint *.py
 
       - name: Run mypy type checking
-        working-directory: ${{ github.workspace }}/src/blog-cleaner
+        working-directory: ${{ github.workspace }}/src/fastapi
         run: |
           pipenv install mypy
           pipenv run mypy .
 
       - name: Run pytest with coverage
-        working-directory: ${{ github.workspace }}/src/blog-cleaner
+        working-directory: ${{ github.workspace }}/src/fastapi
         run: |
           pipenv install pytest pytest-cov
           pipenv run pytest --cov=. --cov-report=xml
@@ -72,7 +72,7 @@ jobs:
       - name: Upload coverage report
         uses: codecov/codecov-action@v3
         with:
-          file: ./src/blog-cleaner/coverage.xml
+          file: ./src/fastapi/coverage.xml
           fail_ci_if_error: false
 
   k8s-lint:
@@ -90,11 +90,11 @@ jobs:
 
       - name: Validate kustomize build
         run: |
-          kustomize build kubernetes/blog-cleaner/base --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary
+          kustomize build kubernetes/fastapi/base --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary
 
       - name: Validate dev overlay
         run: |
-          kustomize build kubernetes/blog-cleaner/overlays/dev --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary
+          kustomize build kubernetes/fastapi/overlays/dev --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary
 
   build-and-deploy:
     runs-on: self-hosted
@@ -102,9 +102,9 @@ jobs:
     env:
       ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
       ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-      PROJECT_DIR: "${{ github.workspace }}/src/blog-cleaner"
-      K8S_DIR: "${{ github.workspace }}/kubernetes/blog-cleaner"
-      IMAGE_NAME: blog-cleaner
+      PROJECT_DIR: "${{ github.workspace }}/src/fastapi"
+      K8S_DIR: "${{ github.workspace }}/kubernetes/fastapi"
+      IMAGE_NAME: fastapi
 
     steps:
       - name: Select environment
@@ -180,11 +180,12 @@ jobs:
         run: |
           # Update the image tag in the kustomization.yaml for the appropriate environment
           cd ${{ env.K8S_DIR }}/overlays/${{ env.k8s-environment }}
-          kustomize edit set image blog-cleaner=${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          kustomize edit set image fastapi=${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
           
           # Deploy using kustomize
-          kubectl create namespace admin --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create namespace api --dry-run=client -o yaml | kubectl apply -f -
           kustomize build . | kubectl apply -f -
           
           # Verify deployment
-          kubectl rollout status deployment/blog-cleaner -n admin --timeout=180s
+          kubectl rollout status deployment/fastapi -n api --timeout=180s
+

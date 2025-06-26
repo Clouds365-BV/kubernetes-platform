@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fastapi-env-config
+data:
+  database_url: "postgresql://dev-user:dev-password@postgres-dev.database.svc.cluster.local:5432/fastapi-dev"
+  api_logging_level: "debug"
+  enable_docs: "true"
+  cors_origins: "http://localhost:3000,https://dev-frontend.example.com"
+  enable_metrics: "true"
+

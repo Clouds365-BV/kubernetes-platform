@@ -1,6 +1,6 @@
 [packages]
-requests = "2.32.4"
-pyjwt = "2.10.1"
+fastapi = "0.115.13"
+pydantic = "2.11.7"
 
 [dev-packages]
 pytest = "*"
@@ -10,9 +10,10 @@ ruff = "*"
 mypy = "*"
 black = "*"
 isort = "*"
+bandit = "*"
 
 [requires]
-python_version = "3.9"
+python_version = ">=3.12"
 
 [scripts]
 lint = "ruff ."
