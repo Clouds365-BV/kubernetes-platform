@@ -1,0 +1,132 @@
+name: k8s Multitenancy
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: Name of the project
+        required: true
+        default: k8s-multi
+      location:
+        description: Azure region
+        required: true
+        default: northeurope
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/k8s-multitenancy.yml
+      - terraform/k8s-multitenancy/**
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/k8s-multitenancy.yml
+      - terraform/k8s-multitenancy/**
+
+jobs:
+  select-environment:
+    name: Select Environment
+    runs-on: ubuntu-latest
+    outputs:
+      selected-environment: "${{ steps.set-env.outputs.environment }}"
+      project-name: "${{ steps.set-defaults.outputs.project_name }}"
+      location: "${{ steps.set-defaults.outputs.location }}"
+    steps:
+      - name: Set environment
+        id: set-env
+        run: |
+          if [ "${{ github.ref_name }}" == "main" ]; then
+            echo "Environment: production"
+            echo "environment=prd" >> "$GITHUB_OUTPUT"
+          else
+            echo "Environment: development"
+            echo "environment=dev" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set default values
+        id: set-defaults
+        run: |
+          # Set default values if inputs are empty (for push/PR triggers)
+          PROJECT_NAME="${{ inputs.project_name }}"
+          LOCATION="${{ inputs.location }}"
+          
+          if [ -z "$PROJECT_NAME" ]; then
+            PROJECT_NAME="k8s-multi"
+          fi
+          
+          if [ -z "$LOCATION" ]; then
+            LOCATION="northeurope"
+          fi
+          
+          echo "project_name=$PROJECT_NAME" >> "$GITHUB_OUTPUT"
+          echo "location=$LOCATION" >> "$GITHUB_OUTPUT"
+
+  validate-infra:
+    name: Validate Infrastructure
+    needs:
+      - select-environment
+    uses: ./.github/workflows/terraform-validate.yml
+    with:
+      working_directory: terraform/k8s-multitenancy
+      backend_key: "${{ needs.select-environment.outputs.project-name }}-${{ needs.select-environment.outputs.selected-environment }}-${{ needs.select-environment.outputs.location }}.tfstate"
+    secrets:
+      AZURE_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+      AZURE_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+      AZURE_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+      AZURE_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
+      TF_BACKEND_SUBSCRIPTION_ID: "${{ secrets.TF_BACKEND_SUBSCRIPTION_ID }}"
+
+  infra:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+    needs:
+      - select-environment
+      - validate-infra
+    env:
+      SELECTED_ENVIRONMENT: "${{ needs.select-environment.outputs.selected-environment }}"
+      ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+      ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+      ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
+      ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
+      TF_BACKEND_SUBSCRIPTION_ID: "${{ secrets.TF_BACKEND_SUBSCRIPTION_ID }}"
+      PROJECT_NAME: "${{ needs.select-environment.outputs.project-name }}"
+      PROJECT_WORKING_DIR: terraform/k8s-multitenancy
+      LOCATION: "${{ needs.select-environment.outputs.location }}"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
+
+      - name: Terraform Init
+        run: >
+          terraform init
+          -input=false
+          -backend-config="subscription_id=$TF_BACKEND_SUBSCRIPTION_ID"
+          -backend-config="resource_group_name=clouds365"
+          -backend-config="storage_account_name=clouds365"
+          -backend-config="container_name=tfstate"
+          -backend-config="key=$PROJECT_NAME-$SELECTED_ENVIRONMENT-$LOCATION.tfstate"
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+
+      - name: Terraform Plan
+        run: >
+          terraform plan
+          -input=false
+          --var="project_name=$PROJECT_NAME"
+          --var="location=$LOCATION"
+          --var-file="$SELECTED_ENVIRONMENT/$LOCATION.tfvars"
+          -out=tfplan
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"
+
+      - name: Terraform Apply
+        #if: github.ref_name == 'main'
+        run: >
+          terraform apply
+          -input=false
+          tfplan
+        working-directory: "${{ env.PROJECT_WORKING_DIR }}"

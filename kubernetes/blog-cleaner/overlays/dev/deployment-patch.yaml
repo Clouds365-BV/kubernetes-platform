@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blog-cleaner
+  namespace: admin
+spec:
+  template:
+    spec:
+      containers:
+        - name: blog-cleaner
+          image: blog-cleaner:dev
+          env:
+            - name: GHOST_URL
+              value: "http://blog.blog.svc.cluster.local"
+            - name: LOG_LEVEL
+              value: "DEBUG"
+

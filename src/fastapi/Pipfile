@@ -1,0 +1,24 @@
+[packages]
+fastapi = "0.115.13"
+pydantic = "2.11.7"
+
+[dev-packages]
+pytest = "*"
+pytest-cov = "*"
+pylint = "*"
+ruff = "*"
+mypy = "*"
+black = "*"
+isort = "*"
+bandit = "*"
+
+[requires]
+python_version = "3.12"
+
+[scripts]
+lint = "ruff ."
+format = "black ."
+sort = "isort ."
+typecheck = "mypy ."
+test = "pytest"
+test-cov = "pytest --cov=. --cov-report=xml"

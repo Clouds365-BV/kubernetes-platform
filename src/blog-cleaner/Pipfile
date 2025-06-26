@@ -1,0 +1,23 @@
+[packages]
+requests = "2.32.4"
+pyjwt = "2.10.1"
+
+[dev-packages]
+pytest = "*"
+pytest-cov = "*"
+pylint = "*"
+ruff = "*"
+mypy = "*"
+black = "*"
+isort = "*"
+
+[requires]
+python_version = "3.12"
+
+[scripts]
+lint = "ruff ."
+format = "black ."
+sort = "isort ."
+typecheck = "mypy ."
+test = "pytest"
+test-cov = "pytest --cov=. --cov-report=xml"

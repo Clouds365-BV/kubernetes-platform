@@ -1,0 +1,117 @@
+name: Build and deploy blog
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/blog.yml
+      - kubernetes/blog/**
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/blog.yml
+      - kubernetes/blog/**
+
+jobs:
+  select-environment:
+    name: Select Environment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+    steps:
+      - name: Set environment
+        id: set-env
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "environment=prod" >> "$GITHUB_OUTPUT"
+          else
+            echo "environment=dev" >> "$GITHUB_OUTPUT"
+          fi
+
+  k8s-lint:
+    uses: ./.github/workflows/k8s-lint.yml
+    with:
+      base-path: kubernetes/blog/base
+      dev-overlay-path: kubernetes/blog/overlays/dev
+
+  build:
+    name: Build and Push Image
+    runs-on: ubuntu-latest
+    needs:
+      - select-environment
+      - k8s-lint
+    #if: github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Azure Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ACR_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Extract branch name
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_ENV
+
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: src/blog-cleaner
+          file: src/blog-cleaner/Dockerfile
+          push: true
+          tags: ${{ secrets.ACR_SERVER }}/blog-cleaner:${{ env.BRANCH_NAME }}-${{ github.sha }}
+
+  deploy:
+    name: Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    needs:
+      - select-environment
+      - build
+    #if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: 5.0.3
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Set Azure credentials
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+
+      - name: Update image tag in kustomization.yaml
+        env:
+          ENVIRONMENT: ${{ needs.select-environment.outputs.environment }}
+        run: |
+          # Update the image tag in the kustomization.yaml for the appropriate environment
+          cd kubernetes/blog/overlays/$ENVIRONMENT
+          kustomize edit set image ghost:5=ghost:5  # We're not changing the Ghost image, but would update any custom images here
+
+      - name: Deploy to Kubernetes
+        env:
+          ENVIRONMENT: ${{ needs.select-environment.outputs.environment }}
+        run: |
+          kustomize build kubernetes/blog/overlays/$ENVIRONMENT | kubectl apply -f -
+          
+          # Verify deployment
+          kubectl rollout status deployment/blog -n blog --timeout=180s

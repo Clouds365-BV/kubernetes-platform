@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+patchesStrategicMerge:
+  - ingress-patch.yaml
+  - deployment-patch.yaml
+
+configMapGenerator:
+  - name: blog-cleaner-config
+    literals:
+      - environment=dev
+
+vars:
+  - name: GHOST_ADMIN_API_KEY
+    objref:
+      kind: ConfigMap
+      name: env-config
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.ghost_admin_api_key

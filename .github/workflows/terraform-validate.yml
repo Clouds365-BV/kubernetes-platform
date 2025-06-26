@@ -7,10 +7,10 @@ on:
         required: true
         type: string
         description: "The directory containing Terraform files to validate"
-      backend_key_suffix:
+      backend_key:
         required: true
         type: string
-        description: "The suffix for state file key (e.g., -northeurope or -k8s-northeurope)"
+        description: "The state file key"
     secrets:
       AZURE_TENANT_ID:
         required: true
@@ -20,25 +20,14 @@ on:
         required: true
       AZURE_CLIENT_SECRET:
         required: true
+      TF_BACKEND_SUBSCRIPTION_ID:
+        required: true
 
 jobs:
   validate:
     name: Validate Terraform
     runs-on: ubuntu-latest
-    env:
-      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     steps:
-      - name: Select environment
-        run: |
-          if [ "${{ github.ref_name }}" == "main" ]; then
-            echo "production"
-            echo "selected-environment=prd" >> "$GITHUB_ENV"
-          else
-            echo "development"
-            echo "selected-environment=dev" >> "$GITHUB_ENV"
-          fi
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -55,26 +44,28 @@ jobs:
           output_file_path: console
           quiet: true
           soft_fail: true
-          directory: ${{ inputs.working_directory }}
+          directory: "${{ inputs.working_directory }}"
 
       - name: Terraform Format
         run: terraform fmt -check
-        working-directory: ${{ inputs.working_directory }}
+        working-directory: "${{ inputs.working_directory }}"
 
       - name: Terraform Init
         env:
+          ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
+          ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
           ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
           ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
         run: >
           terraform init
           -input=false
-          -backend-config="subscription_id=$ARM_SUBSCRIPTION_ID"
-          -backend-config="resource_group_name=terraform"
-          -backend-config="storage_account_name=ncterraform"
-          -backend-config="container_name=state"
-          -backend-config="key=drone-${{env.selected-environment}}${{ inputs.backend_key_suffix }}.tfstate"
-        working-directory: ${{ inputs.working_directory }}
+          -backend-config="subscription_id=${{ secrets.TF_BACKEND_SUBSCRIPTION_ID }}"
+          -backend-config="resource_group_name=clouds365"
+          -backend-config="storage_account_name=clouds365"
+          -backend-config="container_name=tfstate"
+          -backend-config="key=${{ inputs.backend_key }}"
+        working-directory: "${{ inputs.working_directory }}"
 
       - name: Terraform Validate
         run: terraform validate
-        working-directory: ${{ inputs.working_directory }}
+        working-directory: "${{ inputs.working_directory }}"

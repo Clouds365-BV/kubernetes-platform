@@ -1,0 +1,19 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: fastapi-scaler
+  namespace: api
+spec:
+  scaleTargetRef:
+    name: fastapi
+    kind: Deployment
+  minReplicaCount: 1
+  maxReplicaCount: 5
+  cooldownPeriod: 300
+  pollingInterval: 30
+  triggers:
+    - type: cpu
+      metadata:
+        type: Utilization
+        value: "75"
+
