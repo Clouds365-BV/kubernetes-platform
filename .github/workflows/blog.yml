@@ -42,7 +42,7 @@ jobs:
     needs:
       - select-environment
       - k8s-lint
-    if: github.event_name == 'push'
+    #if: github.event_name == 'push'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

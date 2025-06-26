@@ -35,7 +35,7 @@ jobs:
   python-lint:
     uses: ./.github/workflows/python-lint.yml
     with:
-      working-directory: ${{ github.workspace }}/src/fastapi
+      working-directory: src/fastapi
 
   k8s-lint:
     uses: ./.github/workflows/k8s-lint.yml
@@ -50,7 +50,7 @@ jobs:
       - select-environment
       - k8s-lint
       - python-lint
-    if: github.event_name == 'push'
+    #if: github.event_name == 'push'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
