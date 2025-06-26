@@ -8,8 +8,8 @@ It demonstrates basic FastAPI functionality including path parameters and Pydant
 import os
 from typing import Union
 
-from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi import FastAPI
 
 app = FastAPI()
 
