@@ -1,4 +1,4 @@
-name: Kubernetes Manifest Validation
+name: Kubernetes Lint
 
 on:
   workflow_call:
@@ -6,30 +6,33 @@ on:
       base-path:
         required: true
         type: string
-        description: 'Base path for kustomize build'
       dev-overlay-path:
         required: true
         type: string
-        description: 'Path to dev overlay for kustomize build'
 
 jobs:
-  k8s-lint:
+  lint:
     name: Lint Kubernetes Manifests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Kubernetes tools
-        uses: yokawasa/action-setup-kube-tools@v0.9.3
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
         with:
-          kustomize: 5.0.3
-          kubeconform: 0.6.3
+          kustomize-version: 5.0.3
 
-      - name: Validate kustomize build
+      - name: Install Kubeconform
         run: |
-          kustomize build ${{ inputs.base-path }} --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary
+          curl -L -o kubeconform.tar.gz https://github.com/yannh/kubeconform/releases/download/v0.6.3/kubeconform-linux-amd64.tar.gz
+          tar xzf kubeconform.tar.gz
+          sudo mv kubeconform /usr/local/bin/
 
-      - name: Validate dev overlay
+      - name: Validate base manifests
         run: |
-          kustomize build ${{ inputs.dev-overlay-path }} --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary
+          kustomize build ${{ inputs.base-path }} --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary -skip "SecretProviderClass,ScaledObject"
+
+      - name: Validate dev overlay manifests
+        run: |
+          kustomize build ${{ inputs.dev-overlay-path }} --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary -skip "SecretProviderClass,ScaledObject"

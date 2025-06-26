@@ -62,7 +62,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: src/blog-cleaner
           file: src/blog-cleaner/Dockerfile
           push: true
           tags: ${{ secrets.ACR_SERVER }}/blog-cleaner:${{ env.BRANCH_NAME }}-${{ github.sha }}
