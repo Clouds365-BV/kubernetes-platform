@@ -30,6 +30,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       selected-environment: "${{ steps.set-env.outputs.environment }}"
+      project-name: "${{ steps.set-defaults.outputs.project_name }}"
+      location: "${{ steps.set-defaults.outputs.location }}"
     steps:
       - name: Set environment
         id: set-env
@@ -42,6 +44,24 @@ jobs:
             echo "environment=dev" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Set default values
+        id: set-defaults
+        run: |
+          # Set default values if inputs are empty (for push/PR triggers)
+          PROJECT_NAME="${{ inputs.project_name }}"
+          LOCATION="${{ inputs.location }}"
+          
+          if [ -z "$PROJECT_NAME" ]; then
+            PROJECT_NAME="k8s-multi"
+          fi
+          
+          if [ -z "$LOCATION" ]; then
+            LOCATION="northeurope"
+          fi
+          
+          echo "project_name=$PROJECT_NAME" >> "$GITHUB_OUTPUT"
+          echo "location=$LOCATION" >> "$GITHUB_OUTPUT"
+
   validate-infra:
     name: Validate Infrastructure
     needs:
@@ -49,7 +69,7 @@ jobs:
     uses: ./.github/workflows/terraform-validate.yml
     with:
       working_directory: terraform/k8s-multitenancy
-      backend_key: "${{ inputs.project_name }}-${{ needs.select-environment.outputs.selected-environment }}-${{ inputs.location }}.tfstate"
+      backend_key: "${{ needs.select-environment.outputs.project-name }}-${{ needs.select-environment.outputs.selected-environment }}-${{ needs.select-environment.outputs.location }}.tfstate"
     secrets:
       AZURE_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
       AZURE_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
@@ -70,9 +90,9 @@ jobs:
       ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
       ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
       TF_BACKEND_SUBSCRIPTION_ID: "${{ secrets.TF_BACKEND_SUBSCRIPTION_ID }}"
-      PROJECT_NAME: "${{ inputs.project_name }}"
+      PROJECT_NAME: "${{ needs.select-environment.outputs.project-name }}"
       PROJECT_WORKING_DIR: terraform/k8s-multitenancy
-      LOCATION: "${{ inputs.location }}"
+      LOCATION: "${{ needs.select-environment.outputs.location }}"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
