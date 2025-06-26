@@ -27,7 +27,9 @@ jobs:
       dev-overlay-path: kubernetes/blog-cleaner/overlays/dev
 
   build-and-deploy:
-    needs: [ python-lint, k8s-lint ]
+    needs:
+      - python-lint
+      - k8s-lint
     if: github.event_name == 'push'
     uses: ./.github/workflows/aks-build-deploy.yml
     with:
