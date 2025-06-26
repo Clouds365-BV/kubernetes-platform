@@ -31,7 +31,7 @@ jobs:
           fi
 
   lint:
-    uses: ./.github/workflows/templates/k8s-lint.yml
+    uses: ./.github/workflows/k8s-lint.yml
     with:
       base-path: kubernetes/blog/base
       dev-overlay-path: kubernetes/blog/overlays/dev
