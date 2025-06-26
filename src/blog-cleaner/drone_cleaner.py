@@ -99,7 +99,7 @@ class DroneBlogCleaner:
       else:
         failure_count += 1
 
-    print(f"\nDeletion Summary:")
+    print("\nDeletion Summary:")
     print(f"  Success: {success_count} posts")
     print(f"  Failed: {failure_count} posts")
 
