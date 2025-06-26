@@ -31,25 +31,10 @@ jobs:
           fi
 
   lint:
-    name: Lint Kubernetes Manifests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Kubernetes tools
-        uses: yokawasa/action-setup-kube-tools@v0.9.3
-        with:
-          kustomize: 5.0.3
-          kubeconform: 0.6.3
-
-      - name: Validate kustomize build
-        run: |
-          kustomize build kubernetes/blog/base --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary
-
-      - name: Validate dev overlay
-        run: |
-          kustomize build kubernetes/blog/overlays/dev --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary
+    uses: ./.github/workflows/templates/k8s-lint.yml
+    with:
+      base-path: kubernetes/blog/base
+      dev-overlay-path: kubernetes/blog/overlays/dev
 
   build:
     name: Build and Push Image

@@ -66,7 +66,7 @@ jobs:
     name: Validate Infrastructure
     needs:
       - select-environment
-    uses: ./.github/workflows/terraform-validate.yml
+    uses: ./.github/workflows/templates/terraform-validate.yml
     with:
       working_directory: terraform/k8s
       backend_key: "${{ needs.select-environment.outputs.project-name }}-${{ needs.select-environment.outputs.selected-environment }}-${{ needs.select-environment.outputs.location }}.tfstate"

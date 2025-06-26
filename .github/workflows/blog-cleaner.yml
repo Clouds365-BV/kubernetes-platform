@@ -16,175 +16,28 @@ on:
 
 jobs:
   python-lint:
-    name: Python Lint and Test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-          cache: 'pip'
-
-      - name: Install pipenv
-        run: |
-          python -m pip install --upgrade pip
-          pip install pipenv
-
-      - name: Install dependencies with pipenv
-        working-directory: ${{ github.workspace }}/src/blog-cleaner
-        run: |
-          pipenv install --dev
-
-      - name: Generate requirements.txt from Pipfile
-        working-directory: ${{ github.workspace }}/src/blog-cleaner
-        run: |
-          pipenv requirements > requirements.txt
-          echo "Generated requirements.txt file:"
-          cat requirements.txt
-
-      - name: Run ruff linter
-        working-directory: ${{ github.workspace }}/src/blog-cleaner
-        run: |
-          pipenv install ruff
-          pipenv run ruff .
-
-      - name: Run pylint
-        working-directory: ${{ github.workspace }}/src/blog-cleaner
-        run: |
-          pipenv install pylint
-          pipenv run pylint *.py
-
-      - name: Run mypy type checking
-        working-directory: ${{ github.workspace }}/src/blog-cleaner
-        run: |
-          pipenv install mypy
-          pipenv run mypy .
-
-      - name: Run pytest with coverage
-        working-directory: ${{ github.workspace }}/src/blog-cleaner
-        run: |
-          pipenv install pytest pytest-cov
-          pipenv run pytest --cov=. --cov-report=xml
-
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v3
-        with:
-          file: ./src/blog-cleaner/coverage.xml
-          fail_ci_if_error: false
+    uses: ./.github/workflows/templates/python-lint.yml
+    with:
+      working-directory: ${{ github.workspace }}/src/blog-cleaner
 
   k8s-lint:
-    name: Lint Kubernetes Manifests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Kubernetes tools
-        uses: yokawasa/action-setup-kube-tools@v0.9.3
-        with:
-          kustomize: 5.0.3
-          kubeconform: 0.6.3
-
-      - name: Validate kustomize build
-        run: |
-          kustomize build kubernetes/blog-cleaner/base --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary
-
-      - name: Validate dev overlay
-        run: |
-          kustomize build kubernetes/blog-cleaner/overlays/dev --load-restrictor LoadRestrictionsNone | kubeconform -strict -summary
+    uses: ./.github/workflows/templates/k8s-lint.yml
+    with:
+      base-path: kubernetes/blog-cleaner/base
+      dev-overlay-path: kubernetes/blog-cleaner/overlays/dev
 
   build-and-deploy:
-    runs-on: self-hosted
     needs: [ python-lint, k8s-lint ]
-    env:
-      ARM_TENANT_ID: "${{ secrets.AZURE_TENANT_ID }}"
-      ARM_SUBSCRIPTION_ID: "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-      PROJECT_DIR: "${{ github.workspace }}/src/blog-cleaner"
-      K8S_DIR: "${{ github.workspace }}/kubernetes/blog-cleaner"
-      IMAGE_NAME: blog-cleaner
-
-    steps:
-      - name: Select environment
-        run: |
-          if [ "${{ github.ref_name }}" == "main" ]; then
-            echo "selected-environment=prd" >> "$GITHUB_ENV"
-            echo "k8s-environment=prod" >> "$GITHUB_ENV"
-          else
-            echo "selected-environment=dev" >> "$GITHUB_ENV"
-            echo "k8s-environment=dev" >> "$GITHUB_ENV"
-          fi
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-
-      - name: Install pipenv and generate requirements.txt
-        working-directory: ${{ env.PROJECT_DIR }}
-        run: |
-          pip install pipenv
-          pipenv install --dev
-          pipenv requirements > requirements.txt
-          echo "Generated requirements.txt for Docker build:"
-          cat requirements.txt
-
-      - name: Azure Login & Get AKS Credentials
-        env:
-          ARM_CLIENT_ID: "${{ secrets.AZURE_CLIENT_ID }}"
-          ARM_CLIENT_SECRET: "${{ secrets.AZURE_CLIENT_SECRET }}"
-        run: |
-          az login \
-          --service-principal \
-          --username $ARM_CLIENT_ID \
-          --password $ARM_CLIENT_SECRET \
-          --tenant $ARM_TENANT_ID
-          
-          az account set \
-          --subscription $ARM_SUBSCRIPTION_ID
-          
-          az aks get-credentials \
-          --resource-group drone-${{env.selected-environment}}-ne-rg \
-          --name drone-${{env.selected-environment}}-ne-k8s \
-          --overwrite-existing
-          
-          kubelogin convert-kubeconfig -l azurecli
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: ACR Login
-        run: |
-          ACR_NAME="drone${{env.selected-environment}}neacr"
-          echo "ACR_NAME=$ACR_NAME" >> $GITHUB_ENV
-          az acr login --name $ACR_NAME
-
-      - name: Build and Push Image
-        uses: docker/build-push-action@v5
-        with:
-          context: "${{ env.PROJECT_DIR }}"
-          push: true
-          tags: "${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }},${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest"
-
-      - name: Set up Kustomize
-        uses: imranismail/setup-kustomize@v2
-        with:
-          kustomize-version: 5.0.3
-
-      - name: Update kustomization.yaml and deploy with Kustomize
-        run: |
-          # Update the image tag in the kustomization.yaml for the appropriate environment
-          cd ${{ env.K8S_DIR }}/overlays/${{ env.k8s-environment }}
-          kustomize edit set image blog-cleaner=${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
-          
-          # Deploy using kustomize
-          kubectl create namespace admin --dry-run=client -o yaml | kubectl apply -f -
-          kustomize build . | kubectl apply -f -
-          
-          # Verify deployment
-          kubectl rollout status deployment/blog-cleaner -n admin --timeout=180s
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/templates/aks-build-deploy.yml
+    with:
+      project-dir: ${{ github.workspace }}/src/blog-cleaner
+      k8s-dir: ${{ github.workspace }}/kubernetes/blog-cleaner
+      image-name: blog-cleaner
+      namespace: admin
+      deployment-name: blog-cleaner
+    secrets:
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
